@@ -3,8 +3,10 @@ import { Send, MessageCircle, Cloud, Bug, ShoppingCart, Menu } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 const kisanmitraLogoUrl = '/lovable-uploads/273328c3-7e26-4565-9948-7f20159d8eb5.png';
+const GEMINI_API_KEY = 'AIzaSyAkTptgpGBlZgKzcuzveRFgKNcXiVhpvaM';
 
 const features = [
   {
@@ -36,29 +38,74 @@ interface DashboardProps {
 
 export const Dashboard = ({ onLogout }: DashboardProps) => {
   const [chatMessage, setChatMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([
     {
       type: 'bot',
-      message: 'Hello! I\'m your AI farming assistant. How can I help you today? 🌱'
+      message: 'Hello! I\'m your AI farming assistant. How can I help you with farming, weather, crops, or agricultural guidance today? 🌱'
     }
   ]);
+  const { toast } = useToast();
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const callGeminiAPI = async (message: string): Promise<string> => {
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `You are KisanMitra, an AI farming assistant specializing in Indian agriculture. Provide helpful, practical advice about farming, crops, weather, pest control, fertilizers, and agricultural practices. Keep responses concise and farmer-friendly. User question: ${message}`
+            }]
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response from AI');
+      }
+
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I couldn\'t process your question. Please try again.';
+    } catch (error) {
+      console.error('Gemini API Error:', error);
+      return 'I\'m having trouble connecting right now. Please check your internet connection and try again.';
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chatMessage.trim()) return;
+    if (!chatMessage.trim() || isLoading) return;
+
+    const userMessage = chatMessage.trim();
+    setChatMessage('');
+    setIsLoading(true);
 
     // Add user message
-    setChatHistory(prev => [...prev, { type: 'user', message: chatMessage }]);
+    setChatHistory(prev => [...prev, { type: 'user', message: userMessage }]);
     
-    // Simulate bot response (in real app, this would be AI integration)
-    setTimeout(() => {
+    try {
+      // Get AI response from Gemini
+      const aiResponse = await callGeminiAPI(userMessage);
       setChatHistory(prev => [...prev, {
         type: 'bot',
-        message: 'Thank you for your question! I\'m here to help with farming advice, weather updates, and agricultural guidance. What specific farming challenge are you facing?'
+        message: aiResponse
       }]);
-    }, 1000);
-
-    setChatMessage('');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to get AI response. Please try again.",
+        variant: "destructive"
+      });
+      setChatHistory(prev => [...prev, {
+        type: 'bot',
+        message: 'Sorry, I encountered an error. Please try asking your question again.'
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -135,9 +182,14 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
               onChange={(e) => setChatMessage(e.target.value)}
               placeholder="Ask me anything about farming, weather, or crops..."
               className="flex-1 rounded-xl border-border/50 focus:border-primary"
+              disabled={isLoading}
             />
-            <Button type="submit" className="btn-farming px-6">
-              <Send className="w-4 h-4" />
+            <Button type="submit" className="btn-farming px-6" disabled={isLoading || !chatMessage.trim()}>
+              {isLoading ? (
+                <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
             </Button>
           </form>
         </div>
