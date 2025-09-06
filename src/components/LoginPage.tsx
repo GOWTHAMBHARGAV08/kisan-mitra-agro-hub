@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import farmingBg from '@/assets/farming-bg.jpg';
 
+const kisanmitraLogoUrl = '/lovable-uploads/273328c3-7e26-4565-9948-7f20159d8eb5.png';
+
 interface LoginPageProps {
   onLogin: () => void;
 }
@@ -36,11 +38,14 @@ export const LoginPage = ({ onLogin }: LoginPageProps) => {
       <div className="card-farming w-full max-w-md relative z-10">
         {/* Logo & Branding */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-primary rounded-full mx-auto mb-4 flex items-center justify-center text-2xl">
-            🌱
+          <div className="w-32 h-32 mx-auto mb-4">
+            <img 
+              src={kisanmitraLogoUrl} 
+              alt="KisanMitra Logo - Growing Crops, Growing Smiles" 
+              className="w-full h-full object-contain"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-primary mb-2">KisanMitra</h1>
-          <p className="text-muted-foreground">Smart Farming, Simple Solutions</p>
+          <p className="text-muted-foreground font-medium">Growing Crops, Growing Smiles</p>
         </div>
 
         {/* Login Form */}

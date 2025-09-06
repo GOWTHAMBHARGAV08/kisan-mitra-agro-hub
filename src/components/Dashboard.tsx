@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+const kisanmitraLogoUrl = '/lovable-uploads/273328c3-7e26-4565-9948-7f20159d8eb5.png';
+
 const features = [
   {
     icon: Cloud,
@@ -66,12 +68,16 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center text-lg">
-                🌱
+              <div className="w-12 h-12">
+                <img 
+                  src={kisanmitraLogoUrl} 
+                  alt="KisanMitra Logo" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-primary">KisanMitra</h1>
-                <p className="text-xs text-muted-foreground">Your AI Farming Partner</p>
+                <p className="text-xs text-muted-foreground">Growing Crops, Growing Smiles</p>
               </div>
             </div>
             <Button 
@@ -164,8 +170,12 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
-                🌱
+              <div className="w-10 h-10">
+                <img 
+                  src={kisanmitraLogoUrl} 
+                  alt="KisanMitra Logo" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="text-lg font-semibold text-primary">KisanMitra</span>
             </div>
