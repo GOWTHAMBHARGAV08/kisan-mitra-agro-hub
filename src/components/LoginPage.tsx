@@ -107,13 +107,6 @@ export const LoginPage = ({ onLogin }: LoginPageProps) => {
           <div className="flex flex-col space-y-3 pt-4">
             <Button 
               type="button" 
-              variant="outline" 
-              className="w-full h-12 rounded-full border-primary/30 hover:bg-primary/5"
-            >
-              Create New Account
-            </Button>
-            <Button 
-              type="button" 
               variant="ghost" 
               className="text-primary hover:text-primary/80 hover:bg-primary/5 rounded-full"
             >
