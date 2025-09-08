@@ -70,7 +70,7 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
 
   const callGeminiAPI = async (message: string, imageBase64?: string): Promise<string> => {
     try {
-      const modelName = imageBase64 ? 'gemini-pro-vision' : 'gemini-pro';
+      const modelName = imageBase64 ? 'gemini-1.5-flash' : 'gemini-1.5-flash';
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST',
         headers: {
