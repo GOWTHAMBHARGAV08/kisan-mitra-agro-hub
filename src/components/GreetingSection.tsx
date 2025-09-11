@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Sun, Moon, Sunrise, Mic, Cloud, Leaf, Bug, MessageCircle, AlertTriangle, Calendar, Thermometer, MicOff, Volume2, CloudRain, Wind, Droplets } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Sun, Moon, Cloud, Sunrise, Sunset, CloudRain, Mic, MicOff, Wind, Thermometer, Droplets, MapPin, Leaf, MessageCircle, ShoppingCart, Phone, Globe, Users, ArrowRight, TrendingUp } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface GreetingSectionProps {
   onSectionChange?: (section: string) => void;
@@ -10,36 +11,33 @@ interface GreetingSectionProps {
 
 export const GreetingSection = ({ onSectionChange }: GreetingSectionProps) => {
   const [greeting, setGreeting] = useState('');
-  const [icon, setIcon] = useState<typeof Sun>(Sun);
+  const [currentIcon, setCurrentIcon] = useState<any>(Sun);
   const [weather, setWeather] = useState<any>(null);
-  const [seasonalTip, setSeasonalTip] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
-  
+
   useEffect(() => {
     const updateGreeting = () => {
       const currentHour = new Date().getHours();
-      const farmerName = "Gowtham"; // This could be dynamic from user context
       
       if (currentHour >= 5 && currentHour < 12) {
-        setGreeting(`Good Morning ${farmerName}`);
-        setIcon(Sunrise);
+        setGreeting('Good Morning, Farmer!');
+        setCurrentIcon(Sunrise);
       } else if (currentHour >= 12 && currentHour < 17) {
-        setGreeting(`Good Afternoon ${farmerName}`);
-        setIcon(Sun);
+        setGreeting('Good Afternoon, Farmer!');
+        setCurrentIcon(Sun);
       } else {
-        setGreeting(`Good Evening ${farmerName}`);
-        setIcon(Moon);
+        setGreeting('Good Evening, Farmer!');
+        setCurrentIcon(Moon);
       }
     };
     
     updateGreeting();
-    const interval = setInterval(updateGreeting, 60000); // Update every minute
-    
+    const interval = setInterval(updateGreeting, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch weather for alerts
+  // Fetch weather data
   useEffect(() => {
     const fetchWeather = async () => {
       try {
@@ -47,71 +45,90 @@ export const GreetingSection = ({ onSectionChange }: GreetingSectionProps) => {
           `https://api.weatherapi.com/v1/current.json?key=76e2744e2ea54d4492e152146251009&q=Bangalore&aqi=no`
         );
         const data = await response.json();
-        setWeather(data);
+        setWeather({
+          temperature: data.current?.temp_c,
+          humidity: data.current?.humidity,
+          windSpeed: data.current?.wind_kph,
+          condition: data.current?.condition?.text,
+          location: data.location?.name
+        });
       } catch (error) {
         console.error('Failed to fetch weather:', error);
       }
     };
 
     fetchWeather();
-    const weatherInterval = setInterval(fetchWeather, 300000); // Update every 5 minutes
+    const weatherInterval = setInterval(fetchWeather, 300000);
     return () => clearInterval(weatherInterval);
   }, []);
 
-  // Set seasonal tips based on current month
-  useEffect(() => {
-    const month = new Date().getMonth();
-    const tips = {
-      0: "January: Prepare your fields for Rabi crop harvesting. Monitor for late blight in wheat.",
-      1: "February: Good time for harvesting wheat and barley. Start preparing for summer crops.",
-      2: "March: Ideal time for summer crop sowing like maize, cotton, and sugarcane.",
-      3: "April: Continue summer crop care. Ensure adequate irrigation as temperatures rise.",
-      4: "May: Pre-monsoon preparations. Check drainage systems and prepare for Kharif sowing.",
-      5: "June: Monsoon season begins! Perfect time for rice, cotton, and sugarcane sowing.",
-      6: "July: Monitor crop growth closely. Watch for pest attacks due to high humidity.",
-      7: "August: Peak growing season. Ensure proper fertilization and pest management.",
-      8: "September: Harvest time for early Kharif crops. Prepare for post-monsoon care.",
-      9: "October: Major harvest season. Store grains properly and prepare for Rabi sowing.",
-      10: "November: Ideal time for wheat, barley, and mustard sowing. Cool weather benefits crops.",
-      11: "December: Monitor Rabi crops. Protect from cold damage and ensure proper irrigation."
-    };
-    setSeasonalTip(tips[month]);
-  }, []);
-
-  const quickActions = [
-    { icon: Cloud, label: 'Check Weather', section: 'weather', color: 'text-blue-500' },
-    { icon: Leaf, label: 'Analyze Plant', section: 'plant-analyzer', color: 'text-green-500' },
-    { icon: Bug, label: 'Pest Control', section: 'pest-fertilizer', color: 'text-orange-500' },
-    { icon: MessageCircle, label: 'AI Assistant', section: 'chatbot', color: 'text-purple-500' }
+  const quickAccessTiles = [
+    { 
+      icon: Leaf, 
+      title: 'Crop Care', 
+      description: 'Plant health analysis',
+      section: 'plant-analyzer', 
+      gradient: 'from-emerald-500 to-green-600' 
+    },
+    { 
+      icon: CloudRain, 
+      title: 'Weather', 
+      description: 'Real-time forecast',
+      section: 'weather', 
+      gradient: 'from-blue-500 to-sky-600' 
+    },
+    { 
+      icon: ShoppingCart, 
+      title: 'Store', 
+      description: 'Seeds & fertilizer',
+      section: 'pest-fertilizer', 
+      gradient: 'from-amber-500 to-orange-600' 
+    },
+    { 
+      icon: MessageCircle, 
+      title: 'AI Assistant', 
+      description: 'Get farming advice',
+      section: 'chatbot', 
+      gradient: 'from-purple-500 to-indigo-600' 
+    }
   ];
+
+  const supportLinks = [
+    { icon: Phone, label: 'Helpline', subtitle: '1800-XXX-XXXX' },
+    { icon: Globe, label: 'Govt Schemes', subtitle: 'View benefits' },
+    { icon: Users, label: 'Community', subtitle: 'Join WhatsApp' }
+  ];
+
+  const farmingTips = [
+    "Rotate crops to reduce fungal infections and improve soil health",
+    "Irrigate early morning to save water and reduce disease risk",
+    "Use organic compost to enhance soil fertility naturally",
+    "Monitor plants daily for early pest and disease detection",
+    "Plant companion crops to naturally repel pests",
+    "Maintain proper spacing between plants for better air circulation"
+  ];
+
+  const todaysTip = farmingTips[new Date().getDate() % farmingTips.length];
 
   const getWeatherAlert = () => {
     if (!weather) return null;
     
-    const temp = weather.current?.temp_c;
-    const condition = weather.current?.condition?.text?.toLowerCase();
-    const humidity = weather.current?.humidity;
+    const temp = weather.temperature;
+    const humidity = weather.humidity;
 
     if (temp > 40) {
-      return {
-        type: 'danger',
-        message: `Extreme heat alert (${temp}°C)! Ensure adequate irrigation and protect plants from heat stress.`
-      };
+      return `Extreme heat alert (${temp}°C)! Ensure adequate irrigation and protect plants from heat stress.`;
     }
-    if (condition?.includes('rain') || condition?.includes('drizzle')) {
-      return {
-        type: 'warning',
-        message: `Rain expected! Protect harvested crops and ensure proper drainage in fields.`
-      };
+    if (weather.condition?.toLowerCase().includes('rain')) {
+      return `Rain expected! Protect harvested crops and ensure proper drainage in fields.`;
     }
     if (humidity > 85) {
-      return {
-        type: 'info',
-        message: `High humidity (${humidity}%)! Monitor crops for fungal diseases and ensure proper ventilation.`
-      };
+      return `High humidity (${humidity}%)! Monitor crops for fungal diseases and ensure proper ventilation.`;
     }
     return null;
   };
+
+  const weatherAlert = getWeatherAlert();
 
   // Voice assistant functions
   const startListening = () => {
@@ -134,12 +151,16 @@ export const GreetingSection = ({ onSectionChange }: GreetingSectionProps) => {
         const command = transcript.toLowerCase();
         if (command.includes('weather') || command.includes('temperature')) {
           onSectionChange?.('weather');
+          toast.success('Opening Weather section');
         } else if (command.includes('plant') || command.includes('analyze')) {
           onSectionChange?.('plant-analyzer');
+          toast.success('Opening Plant Analyzer');
         } else if (command.includes('pest') || command.includes('fertilizer')) {
           onSectionChange?.('pest-fertilizer');
+          toast.success('Opening Pest & Fertilizer section');
         } else if (command.includes('chat') || command.includes('assistant')) {
           onSectionChange?.('chatbot');
+          toast.success('Opening AI Assistant');
         }
       };
       
@@ -149,169 +170,211 @@ export const GreetingSection = ({ onSectionChange }: GreetingSectionProps) => {
 
   const stopListening = () => setIsListening(false);
 
-  const weatherAlert = getWeatherAlert();
-  
-  const Icon = icon;
-  
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Enhanced Greeting Section */}
-      <div className="dashboard-card text-center p-8">
+      {/* Hero Banner */}
+      <div className="text-center space-y-6 py-8">
         <div className="flex items-center justify-center gap-4 mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-            <Icon className="w-8 h-8 text-primary icon-bounce" />
+          <div className="w-16 h-16">
+            <img 
+              src="/lovable-uploads/3ad415cf-80f1-4add-92a5-d08cd8333756.png" 
+              alt="KisanMitra Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
-          <div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              {greeting} 🌱
-            </h2>
-            <p className="text-muted-foreground text-lg">Welcome back to your intelligent farming dashboard</p>
+          <div className="text-left">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent">
+              KisanMitra
+            </h1>
+            <p className="text-lg text-emerald-600 font-medium">Growing Crops, Growing Smiles</p>
           </div>
+        </div>
+        
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          Your AI-powered farming assistant for crop care, weather updates, and farm support.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+          <Button 
+            size="lg" 
+            className="btn-farming text-lg px-8 py-6 h-auto"
+            onClick={() => onSectionChange?.('plant-analyzer')}
+          >
+            <Leaf className="h-6 w-6 mr-3" />
+            Start Plant Health Check
+          </Button>
+          <Button 
+            size="lg" 
+            variant="outline"
+            className="text-lg px-8 py-6 h-auto border-2 border-primary/30 hover:bg-primary/10"
+            onClick={() => onSectionChange?.('chatbot')}
+          >
+            <MessageCircle className="h-6 w-6 mr-3" />
+            Ask AI Assistant
+          </Button>
         </div>
       </div>
 
-      {/* Enhanced Weather-Based Alerts */}
+      {/* Weather Alert */}
       {weatherAlert && (
-        <Alert className={`border-l-4 rounded-2xl p-6 shadow-lg ${
-          weatherAlert.type === 'danger' ? 'border-red-500 bg-gradient-to-br from-red-50 to-red-100' :
-          weatherAlert.type === 'warning' ? 'border-yellow-500 bg-gradient-to-br from-yellow-50 to-yellow-100' :
-          'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100'
-        }`}>
-          <AlertTriangle className="h-5 w-5" />
-          <AlertDescription className="font-semibold text-lg ml-2">
-            {weatherAlert.message}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Enhanced Voice Assistant Quick Actions */}
-      <Card className="dashboard-card">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
-              <Mic className="w-6 h-6 text-white" />
-            </div>
-            Voice Assistant Quick Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-6 mb-8">
-            {quickActions.map((action) => (
-              <Button
-                key={action.section}
-                variant="outline"
-                className="h-24 p-6 flex flex-col items-center justify-center gap-3 border-2 hover:border-primary/50 transition-all duration-300 group rounded-2xl"
-                onClick={() => onSectionChange?.(action.section)}
-              >
-                <action.icon className={`w-8 h-8 ${action.color} icon-bounce group-hover:scale-110`} />
-                <span className="text-sm font-semibold">{action.label}</span>
-              </Button>
-            ))}
-          </div>
-
-          {/* Voice Controls */}
-          <div className="p-6 bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl border border-green-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
-                  <Volume2 className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg font-semibold text-gray-800">Voice Assistant</span>
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  size="lg"
-                  variant={isListening ? "destructive" : "default"}
-                  onClick={isListening ? stopListening : startListening}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                    isListening 
-                      ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 animate-pulse' 
-                      : 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600'
-                  }`}
-                >
-                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                  {isListening ? "Stop" : "Speak"}
-                </Button>
-              </div>
-            </div>
-            {transcript && (
-              <div className="mt-4 p-4 bg-white/70 rounded-xl border border-green-200">
-                <p className="text-gray-700 font-medium">
-                  🎤 You said: <span className="text-green-700 italic">"{transcript}"</span>
-                </p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Enhanced Seasonal Advice */}
-      <Card className="dashboard-card">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            <div className="p-2 bg-gradient-to-br from-green-500 to-yellow-500 rounded-lg">
-              <Calendar className="w-6 h-6 text-white" />
-            </div>
-            🌾 Seasonal Farming Advice
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="p-6 bg-gradient-to-br from-green-50 to-yellow-50 rounded-2xl border-l-4 border-green-500 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-yellow-500 flex items-center justify-center">
-                <Leaf className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="font-bold text-green-800 text-lg mb-2">Expert Seasonal Guidance</h4>
-                <p className="text-green-700 text-base leading-relaxed">
-                  {seasonalTip}
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Enhanced Current Weather Summary */}
-      {weather && (
-        <Card className="dashboard-card">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-2xl">
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg">
-                <Cloud className="w-6 h-6 text-white" />
-              </div>
-              Current Weather Conditions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="text-center p-4 bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border border-red-100">
-                <Thermometer className="w-8 h-8 text-red-500 mx-auto mb-3 icon-bounce" />
-                <p className="text-red-600 font-medium mb-1">Temperature</p>
-                <p className="text-red-800 font-bold text-2xl">{weather.current?.temp_c}°C</p>
-              </div>
-              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
-                <Droplets className="w-8 h-8 text-blue-500 mx-auto mb-3 icon-bounce" />
-                <p className="text-blue-600 font-medium mb-1">Humidity</p>
-                <p className="text-blue-800 font-bold text-2xl">{weather.current?.humidity}%</p>
-              </div>
-              <div className="text-center p-4 bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl border border-gray-100">
-                <Wind className="w-8 h-8 text-gray-500 mx-auto mb-3 icon-bounce" />
-                <p className="text-gray-600 font-medium mb-1">Wind Speed</p>
-                <p className="text-gray-800 font-bold text-2xl">{weather.current?.wind_kph} km/h</p>
-              </div>
-              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100">
-                <CloudRain className="w-8 h-8 text-green-500 mx-auto mb-3 icon-bounce" />
-                <p className="text-green-600 font-medium mb-1">Condition</p>
-                <p className="text-green-800 font-bold text-lg">{weather.current?.condition?.text}</p>
-              </div>
-            </div>
-            <div className="mt-4 text-center">
-              <p className="text-muted-foreground text-sm">📍 {weather.location?.name}</p>
+        <Card className="border-l-4 border-l-orange-500 bg-orange-50/90 backdrop-blur-sm animate-fade-in">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Wind className="h-5 w-5 text-orange-600" />
+              <p className="font-medium text-orange-800">{weatherAlert}</p>
             </div>
           </CardContent>
         </Card>
       )}
+
+      {/* Quick Access Tiles */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-center text-foreground">Quick Access</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {quickAccessTiles.map((tile, index) => (
+            <Card 
+              key={tile.section} 
+              className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 bg-white/80 backdrop-blur-sm border-2 hover:border-primary/30 overflow-hidden"
+              onClick={() => onSectionChange?.(tile.section)}
+            >
+              <div className={`h-2 bg-gradient-to-r ${tile.gradient}`}></div>
+              <CardContent className="p-6 text-center">
+                <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r ${tile.gradient} flex items-center justify-center text-white shadow-lg group-hover:shadow-xl transition-shadow`}>
+                  <tile.icon className="h-8 w-8" />
+                </div>
+                <h3 className="font-bold text-lg text-foreground mb-2">{tile.title}</h3>
+                <p className="text-sm text-muted-foreground">{tile.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Weather Snapshot */}
+      {weather && (
+        <Card className="bg-gradient-to-r from-blue-50/90 to-sky-50/90 border-blue-200 backdrop-blur-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-blue-700">
+                <CloudRain className="h-6 w-6" />
+                Weather Snapshot
+              </CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => onSectionChange?.('weather')}
+                className="border-blue-300 text-blue-700 hover:bg-blue-50"
+              >
+                See Full Forecast
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Thermometer className="h-5 w-5 text-red-500" />
+                </div>
+                <p className="text-2xl font-bold text-blue-800">{weather.temperature}°C</p>
+                <p className="text-sm text-blue-600">Temperature</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Droplets className="h-5 w-5 text-blue-500" />
+                </div>
+                <p className="text-2xl font-bold text-blue-800">{weather.humidity}%</p>
+                <p className="text-sm text-blue-600">Humidity</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Wind className="h-5 w-5 text-gray-500" />
+                </div>
+                <p className="text-2xl font-bold text-blue-800">{weather.windSpeed}</p>
+                <p className="text-sm text-blue-600">Wind (km/h)</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <MapPin className="h-5 w-5 text-green-500" />
+                </div>
+                <p className="text-lg font-bold text-blue-800">{weather.condition}</p>
+                <p className="text-sm text-blue-600">Condition</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Farming Tip of the Day */}
+      <Card className="bg-gradient-to-r from-green-50/90 to-emerald-50/90 border-green-200 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-green-700">
+            <TrendingUp className="h-6 w-6" />
+            Farming Tip of the Day
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-start gap-3">
+            <div className="w-3 h-3 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
+            <p className="text-green-800 font-medium text-lg leading-relaxed">{todaysTip}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Support Links */}
+      <Card className="bg-white/80 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="text-center text-foreground">Quick Support</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {supportLinks.map((link, index) => (
+              <div 
+                key={index}
+                className="flex items-center gap-3 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 hover:from-primary/10 hover:to-primary/20 transition-all cursor-pointer"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <link.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">{link.label}</p>
+                  <p className="text-sm text-muted-foreground">{link.subtitle}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Voice Assistant - Simplified */}
+      <Card className="bg-gradient-to-r from-purple-50/90 to-indigo-50/90 border-purple-200 backdrop-blur-sm">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center text-white">
+                <MessageCircle className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-purple-700">Voice Commands</h3>
+                <p className="text-sm text-purple-600">Say "Go to weather" or "Open plant analyzer"</p>
+              </div>
+            </div>
+            <Button 
+              onClick={isListening ? stopListening : startListening}
+              variant={isListening ? "destructive" : "default"}
+              className={`transition-all duration-300 ${isListening ? 'bg-red-500 hover:bg-red-600 animate-pulse' : 'btn-farming'}`}
+            >
+              {isListening ? <MicOff className="h-4 w-4 mr-2" /> : <Mic className="h-4 w-4 mr-2" />}
+              {isListening ? 'Stop' : 'Listen'}
+            </Button>
+          </div>
+          {transcript && (
+            <div className="mt-4 p-3 bg-white/50 rounded-lg">
+              <p className="text-sm text-purple-800">"{transcript}"</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

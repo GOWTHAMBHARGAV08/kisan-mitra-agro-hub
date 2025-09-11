@@ -127,7 +127,13 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    background: var(--gradient-nature);
+    background: 
+      linear-gradient(rgba(255, 255, 255, 0.81), rgba(255, 255, 255, 0.81)),
+      url('/lovable-uploads/b289a1d8-4d84-4e03-b6a6-c50214a5be6e.png'),
+      var(--gradient-nature);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     min-height: 100vh;
   }
 }
