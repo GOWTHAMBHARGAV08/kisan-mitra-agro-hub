@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Leaf, Upload, Camera, X, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Leaf, Upload, Camera, X, CheckCircle, AlertTriangle, Bug, Pill, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -7,10 +7,13 @@ import { useToast } from '@/hooks/use-toast';
 const GEMINI_API_KEY = 'AIzaSyAkTptgpGBlZgKzcuzveRFgKNcXiVhpvaM';
 
 interface AnalysisResult {
+  plantName: string;
   status: 'healthy' | 'diseased' | 'pest' | 'nutrient_deficiency';
   confidence: number;
   description: string;
+  diseaseDetected?: string;
   recommendations: string[];
+  precautions: string[];
   severity?: 'low' | 'medium' | 'high';
 }
 
@@ -46,10 +49,13 @@ export const PlantAnalyzer = () => {
             {
               text: `You are an expert plant pathologist. Analyze this plant image and provide a detailed health assessment. Return your analysis in JSON format with the following structure:
 {
+  "plantName": "name of the plant species identified",
   "status": "healthy|diseased|pest|nutrient_deficiency", 
   "confidence": 0-100,
   "description": "detailed description of what you observe",
-  "recommendations": ["specific actionable recommendation 1", "recommendation 2", "recommendation 3"],
+  "diseaseDetected": "specific disease name if any" (only if status is not healthy),
+  "recommendations": ["specific treatment 1", "treatment 2", "treatment 3"],
+  "precautions": ["preventive step 1", "preventive step 2", "preventive step 3"],
   "severity": "low|medium|high" (only if status is not healthy)
 }
 
@@ -94,20 +100,24 @@ Be specific about treatments, fertilizers, pesticides, or care instructions suit
       } else {
         // Fallback parsing
         return {
+          plantName: 'Unknown Plant',
           status: 'diseased',
           confidence: 75,
           description: aiResponse,
           recommendations: ['Consult with local agricultural expert', 'Monitor plant closely'],
+          precautions: ['Regular monitoring', 'Proper watering'],
           severity: 'medium'
         };
       }
     } catch (error) {
       // Fallback result
       return {
+        plantName: 'Unknown Plant',
         status: 'diseased',
         confidence: 60,
         description: aiResponse,
         recommendations: ['Consult with local agricultural expert'],
+        precautions: ['Regular monitoring'],
         severity: 'medium'
       };
     }
@@ -292,37 +302,87 @@ Be specific about treatments, fertilizers, pesticides, or care instructions suit
 
         {/* Analysis Results */}
         {analysisResult && (
-          <div className="space-y-4 mt-6">
-            <div className={`p-4 rounded-lg border ${getStatusColor(analysisResult.status)}`}>
-              <div className="flex items-center gap-2 mb-2">
-                {getStatusIcon(analysisResult.status)}
-                <span className="font-semibold capitalize">
-                  {analysisResult.status.replace('_', ' ')}
-                </span>
-                <span className="text-sm">({analysisResult.confidence}% confidence)</span>
-              </div>
-              {analysisResult.severity && (
-                <div className="text-sm mb-2">
-                  Severity: <span className="font-semibold">{analysisResult.severity.toUpperCase()}</span>
+          <div className="space-y-6 mt-6">
+            {/* Plant Name Section */}
+            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+              <div className="flex items-center gap-3">
+                <div className="text-2xl">🌱</div>
+                <div>
+                  <h3 className="text-lg font-bold text-green-700">Plant Name</h3>
+                  <p className="text-green-600 font-semibold">{analysisResult.plantName}</p>
                 </div>
-              )}
+              </div>
             </div>
 
-            <div>
-              <h4 className="font-semibold text-primary mb-2">Analysis Description</h4>
-              <p className="text-muted-foreground">{analysisResult.description}</p>
+            {/* Disease Detection Section */}
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="text-2xl">🦠</div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">Disease Detected</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    {analysisResult.status === 'healthy' ? (
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-red-500" />
+                    )}
+                    <span className="font-semibold">
+                      {analysisResult.diseaseDetected || 'No Disease Detected'}
+                    </span>
+                    {analysisResult.severity && (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        analysisResult.severity === 'high' ? 'bg-red-100 text-red-700' :
+                        analysisResult.severity === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-green-100 text-green-700'
+                      }`}>
+                        {analysisResult.severity.toUpperCase()} SEVERITY
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <p className="text-gray-600 text-sm pl-11">{analysisResult.description}</p>
             </div>
 
-            <div>
-              <h4 className="font-semibold text-primary mb-2">Recommendations</h4>
-              <ul className="space-y-2">
-                {analysisResult.recommendations.map((rec, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-muted-foreground">{rec}</span>
-                  </li>
-                ))}
-              </ul>
+            {/* Remedies Section */}
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">💊</div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-blue-700 mb-3">Remedies / Treatments</h3>
+                  <ul className="space-y-2">
+                    {analysisResult.recommendations.map((rec, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <span className="text-blue-600 text-sm">{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Precautions Section */}
+            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">⚠️</div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-orange-700 mb-3">Precautions</h3>
+                  <ul className="space-y-2">
+                    {analysisResult.precautions.map((precaution, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <span className="text-orange-600 text-sm">{precaution}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Confidence Score */}
+            <div className="text-center text-sm text-muted-foreground">
+              Analysis Confidence: {analysisResult.confidence}%
             </div>
           </div>
         )}
