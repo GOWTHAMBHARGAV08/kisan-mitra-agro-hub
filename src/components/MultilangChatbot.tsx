@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Send, MessageCircle, Camera, Upload, X, Globe, Mic, MicOff } from 'lucide-react';
+import { Send, MessageCircle, Camera, Upload, X, Globe, Mic, MicOff, Volume2 } from 'lucide-react';
 
 // Type declarations for Web Speech API
 interface ISpeechRecognition extends EventTarget {
@@ -82,10 +82,11 @@ export const MultilangChatbot = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
     {
       type: 'bot',
-      message: 'Hello! I\'m your AI farming assistant. I can help you in multiple Indian languages. How can I assist you with farming, weather, crops, or agricultural guidance today? 🌱\n\nYou can also share photos of your crops, pests, or plant diseases for better assistance! 📸\n\n🎤 You can also use voice chat - click the microphone to speak!',
+      message: 'Hello! I\'m your AI farming assistant. I can help you in multiple Indian languages. How can I assist you with farming, weather, crops, or agricultural guidance today? 🌱\n\nYou can also share photos of your crops, pests, or plant diseases for better assistance! 📸\n\n🎤 You can also use voice chat - click the microphone to speak!\n🔊 All my responses can be heard aloud - click the speaker icon!',
       language: 'english'
     }
   ]);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -231,15 +232,70 @@ export const MultilangChatbot = () => {
     }
   };
 
-  // Speech synthesis for responses
-  const speakResponse = (text: string, language: string) => {
+  // Enhanced speech synthesis for responses
+  const speakResponse = (text: string, language: string, autoSpeak: boolean = false) => {
     if ('speechSynthesis' in window) {
+      // Stop any ongoing speech
+      speechSynthesis.cancel();
+      
       const utterance = new SpeechSynthesisUtterance(text);
       const languageCode = languages[language as keyof typeof languages]?.code || 'en';
+      
+      // Set language
       utterance.lang = languageCode;
-      utterance.rate = 0.8;
+      utterance.rate = 0.85; // Slightly slower for better clarity
       utterance.pitch = 1;
+      utterance.volume = 1;
+      
+      // Try to find a voice that supports the language
+      const voices = speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.lang.startsWith(languageCode) || 
+        voice.lang.startsWith(languageCode.split('-')[0])
+      );
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        if (!autoSpeak) {
+          toast({
+            title: "🔊 Speaking",
+            description: "Playing response in " + languages[language as keyof typeof languages]?.name,
+          });
+        }
+      };
+      
+      utterance.onend = () => {
+        setIsSpeaking(false);
+      };
+      
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+        toast({
+          title: "Voice error",
+          description: "Unable to play audio. Please try again.",
+          variant: "destructive"
+        });
+      };
+      
       speechSynthesis.speak(utterance);
+    } else {
+      toast({
+        title: "Audio not supported",
+        description: "Your browser doesn't support text-to-speech.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Stop speaking function
+  const stopSpeaking = () => {
+    if ('speechSynthesis' in window && speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+      setIsSpeaking(false);
     }
   };
 
@@ -301,8 +357,10 @@ export const MultilangChatbot = () => {
         language: selectedLanguage
       }]);
       
-      // Speak the response
-      speakResponse(aiResponse, selectedLanguage);
+      // Automatically speak the response
+      setTimeout(() => {
+        speakResponse(aiResponse, selectedLanguage, true);
+      }, 500); // Small delay to ensure UI updates first
       
       if (imageToSend) {
         URL.revokeObjectURL(imageToSend);
@@ -357,27 +415,45 @@ export const MultilangChatbot = () => {
               key={index}
               className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div
-                className={`max-w-xs px-4 py-2 rounded-xl ${
-                  chat.type === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-white text-foreground border border-border/50'
-                }`}
-              >
-                {chat.image && (
-                  <div className="mb-2">
-                    <img 
-                      src={chat.image} 
-                      alt="Uploaded image" 
-                      className="rounded-lg max-w-full h-auto max-h-32 object-cover"
-                    />
-                  </div>
-                )}
-                <div className="whitespace-pre-wrap">{chat.message}</div>
-                {chat.language && chat.language !== 'english' && (
-                  <div className="text-xs opacity-70 mt-1">
-                    {languages[chat.language as keyof typeof languages]?.name}
-                  </div>
+              <div className={`flex items-start gap-2 ${chat.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div
+                  className={`max-w-xs px-4 py-3 rounded-xl ${
+                    chat.type === 'user'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-white text-foreground border border-border/50 shadow-sm'
+                  }`}
+                >
+                  {chat.image && (
+                    <div className="mb-2">
+                      <img 
+                        src={chat.image} 
+                        alt="Uploaded image" 
+                        className="rounded-lg max-w-full h-auto max-h-32 object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed">{chat.message}</div>
+                  {chat.language && chat.language !== 'english' && (
+                    <div className="text-xs opacity-70 mt-1">
+                      {languages[chat.language as keyof typeof languages]?.name}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Listen button for bot responses */}
+                {chat.type === 'bot' && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className={`p-2 h-8 w-8 rounded-full mt-1 ${
+                      isSpeaking ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'
+                    }`}
+                    onClick={() => isSpeaking ? stopSpeaking() : speakResponse(chat.message, chat.language || 'english')}
+                    title={isSpeaking ? "Stop listening" : "🔊 Listen to response"}
+                  >
+                    <Volume2 className={`w-4 h-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
+                  </Button>
                 )}
               </div>
             </div>
