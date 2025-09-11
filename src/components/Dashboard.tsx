@@ -20,7 +20,7 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'home':
-        return <GreetingSection />;
+        return <GreetingSection onSectionChange={setActiveSection} />;
       case 'weather':
         return <WeatherSection />;
       case 'plant-analyzer':
@@ -30,13 +30,19 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
       case 'chatbot':
         return <MultilangChatbot />;
       default:
-        return <GreetingSection />;
+        return <GreetingSection onSectionChange={setActiveSection} />;
     }
   };
 
   return (
     <SidebarProvider>
       <div className="min-h-screen w-full bg-gradient-nature farming-pattern flex">
+        {/* Sidebar */}
+        <AppSidebar 
+          activeSection={activeSection} 
+          onSectionChange={setActiveSection} 
+        />
+        
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
           {/* Header */}
@@ -100,11 +106,6 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
           </footer>
         </div>
 
-        {/* Sidebar */}
-        <AppSidebar 
-          activeSection={activeSection} 
-          onSectionChange={setActiveSection} 
-        />
       </div>
     </SidebarProvider>
   );

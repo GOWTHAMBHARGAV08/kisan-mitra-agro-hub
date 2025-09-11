@@ -36,7 +36,7 @@ export function AppSidebar({ activeSection, onSectionChange }: AppSidebarProps) 
 
   return (
     <Sidebar
-      side="right"
+      side="left"
       className={state === "collapsed" ? "w-14" : "w-60"}
       collapsible="icon"
     >

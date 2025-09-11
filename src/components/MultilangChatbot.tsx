@@ -1,5 +1,48 @@
 import { useState, useRef } from 'react';
-import { Send, MessageCircle, Camera, Upload, X, Globe } from 'lucide-react';
+import { Send, MessageCircle, Camera, Upload, X, Globe, Mic, MicOff } from 'lucide-react';
+
+// Type declarations for Web Speech API
+interface ISpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onstart: ((this: ISpeechRecognition, ev: Event) => any) | null;
+  onresult: ((this: ISpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
+  onerror: ((this: ISpeechRecognition, ev: SpeechRecognitionErrorEvent) => any) | null;
+  onend: ((this: ISpeechRecognition, ev: Event) => any) | null;
+}
+
+declare global {
+  interface Window {
+    webkitSpeechRecognition: new () => ISpeechRecognition;
+    SpeechRecognition: new () => ISpeechRecognition;
+  }
+}
+
+interface SpeechRecognitionEvent extends Event {
+  readonly results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  readonly error: string;
+}
+
+interface SpeechRecognitionResultList {
+  readonly length: number;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  readonly length: number;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  readonly transcript: string;
+  readonly confidence: number;
+}
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,16 +77,57 @@ export const MultilangChatbot = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState('english');
+  const [isListening, setIsListening] = useState(false);
+  const [recognition, setRecognition] = useState<ISpeechRecognition | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
     {
       type: 'bot',
-      message: 'Hello! I\'m your AI farming assistant. I can help you in multiple Indian languages. How can I assist you with farming, weather, crops, or agricultural guidance today? 🌱\n\nYou can also share photos of your crops, pests, or plant diseases for better assistance! 📸',
+      message: 'Hello! I\'m your AI farming assistant. I can help you in multiple Indian languages. How can I assist you with farming, weather, crops, or agricultural guidance today? 🌱\n\nYou can also share photos of your crops, pests, or plant diseases for better assistance! 📸\n\n🎤 You can also use voice chat - click the microphone to speak!',
       language: 'english'
     }
   ]);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize speech recognition
+  useState(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognitionClass = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const recognitionInstance = new SpeechRecognitionClass();
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = false;
+      
+      recognitionInstance.onstart = () => {
+        setIsListening(true);
+        toast({
+          title: "Listening...",
+          description: "Speak now. I'm listening to your question.",
+        });
+      };
+      
+      recognitionInstance.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setChatMessage(transcript);
+        setIsListening(false);
+      };
+      
+      recognitionInstance.onerror = (event) => {
+        setIsListening(false);
+        toast({
+          title: "Voice recognition error",
+          description: "Please try speaking again or type your message.",
+          variant: "destructive"
+        });
+      };
+      
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+      };
+      
+      setRecognition(recognitionInstance);
+    }
+  });
 
   const convertImageToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -147,6 +231,39 @@ export const MultilangChatbot = () => {
     }
   };
 
+  // Speech synthesis for responses
+  const speakResponse = (text: string, language: string) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      const languageCode = languages[language as keyof typeof languages]?.code || 'en';
+      utterance.lang = languageCode;
+      utterance.rate = 0.8;
+      utterance.pitch = 1;
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  // Voice input handler
+  const handleVoiceInput = () => {
+    if (!recognition) {
+      toast({
+        title: "Voice not supported",
+        description: "Your browser doesn't support voice recognition.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+    } else {
+      const languageCode = languages[selectedLanguage as keyof typeof languages]?.code || 'en';
+      recognition.lang = languageCode;
+      recognition.start();
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!chatMessage.trim() && !selectedImage) || isLoading) return;
@@ -183,6 +300,9 @@ export const MultilangChatbot = () => {
         message: aiResponse,
         language: selectedLanguage
       }]);
+      
+      // Speak the response
+      speakResponse(aiResponse, selectedLanguage);
       
       if (imageToSend) {
         URL.revokeObjectURL(imageToSend);
@@ -320,6 +440,17 @@ export const MultilangChatbot = () => {
             >
               <Camera className="w-4 h-4 mr-2" />
               Take Photo
+            </Button>
+            <Button
+              type="button"
+              variant={isListening ? "default" : "outline"}
+              size="sm"
+              onClick={handleVoiceInput}
+              className={`rounded-full ${isListening ? 'bg-red-500 hover:bg-red-600 text-white' : 'border-primary/30 hover:bg-primary/5'}`}
+              disabled={isLoading}
+            >
+              {isListening ? <MicOff className="w-4 h-4 mr-2" /> : <Mic className="w-4 h-4 mr-2" />}
+              {isListening ? 'Stop' : 'Voice'}
             </Button>
           </div>
 
