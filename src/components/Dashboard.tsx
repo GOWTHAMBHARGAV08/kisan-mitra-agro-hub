@@ -24,7 +24,7 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
       case 'weather':
         return <WeatherSection />;
       case 'plant-analyzer':
-        return <PlantAnalyzer />;
+        return <PlantAnalyzer onNavigateToStore={() => setActiveSection('pest-fertilizer')} />;
       case 'pest-fertilizer':
         return <PestFertilizerRecommendations />;
       case 'chatbot':
