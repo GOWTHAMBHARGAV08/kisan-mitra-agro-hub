@@ -183,8 +183,9 @@ export const GreetingSection = ({ onSectionChange }: GreetingSectionProps) => {
             />
           </div>
           <div className="text-left">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent">
-              KisanMitra
+            <h1 className="text-4xl md:text-5xl font-bold">
+              <span className="text-orange-600">Kisan</span>
+              <span className="bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent">Mitra</span>
             </h1>
             <p className="text-lg text-emerald-600 font-medium">Growing Crops, Growing Smiles</p>
           </div>
