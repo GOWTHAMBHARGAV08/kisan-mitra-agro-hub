@@ -8,7 +8,7 @@ import { AppSidebar } from './AppSidebar';
 import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
-const kisanmitraLogoUrl = '/lovable-uploads/273328c3-7e26-4565-9948-7f20159d8eb5.png';
+const kisanmitraLogoUrl = '/lovable-uploads/3ad415cf-80f1-4add-92a5-d08cd8333756.png';
 
 interface DashboardProps {
   onLogout: () => void;

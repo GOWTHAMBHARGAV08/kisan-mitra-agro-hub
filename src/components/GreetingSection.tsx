@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sun, Moon, Sunrise, Mic, Cloud, Leaf, Bug, MessageCircle, AlertTriangle, Calendar, Thermometer } from 'lucide-react';
+import { Sun, Moon, Sunrise, Mic, Cloud, Leaf, Bug, MessageCircle, AlertTriangle, Calendar, Thermometer, MicOff, Volume2, CloudRain, Wind, Droplets } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -13,6 +13,8 @@ export const GreetingSection = ({ onSectionChange }: GreetingSectionProps) => {
   const [icon, setIcon] = useState<typeof Sun>(Sun);
   const [weather, setWeather] = useState<any>(null);
   const [seasonalTip, setSeasonalTip] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
   
   useEffect(() => {
     const updateGreeting = () => {
@@ -111,106 +113,201 @@ export const GreetingSection = ({ onSectionChange }: GreetingSectionProps) => {
     return null;
   };
 
+  // Voice assistant functions
+  const startListening = () => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const recognition = new SpeechRecognition();
+      
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+      
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
+      
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setTranscript(transcript);
+        
+        // Process voice commands
+        const command = transcript.toLowerCase();
+        if (command.includes('weather') || command.includes('temperature')) {
+          onSectionChange?.('weather');
+        } else if (command.includes('plant') || command.includes('analyze')) {
+          onSectionChange?.('plant-analyzer');
+        } else if (command.includes('pest') || command.includes('fertilizer')) {
+          onSectionChange?.('pest-fertilizer');
+        } else if (command.includes('chat') || command.includes('assistant')) {
+          onSectionChange?.('chatbot');
+        }
+      };
+      
+      recognition.start();
+    }
+  };
+
+  const stopListening = () => setIsListening(false);
+
   const weatherAlert = getWeatherAlert();
   
   const Icon = icon;
   
   return (
-    <div className="space-y-6">
-      {/* Greeting Section */}
-      <div className="card-farming text-center">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <Icon className="w-6 h-6 text-primary" />
+    <div className="space-y-8 animate-fade-in">
+      {/* Enhanced Greeting Section */}
+      <div className="dashboard-card text-center p-8">
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+            <Icon className="w-8 h-8 text-primary icon-bounce" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-primary">{greeting}</h2>
-            <p className="text-muted-foreground">Welcome back to your farming dashboard</p>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              {greeting} 🌱
+            </h2>
+            <p className="text-muted-foreground text-lg">Welcome back to your intelligent farming dashboard</p>
           </div>
         </div>
       </div>
 
-      {/* Weather-Based Alerts */}
+      {/* Enhanced Weather-Based Alerts */}
       {weatherAlert && (
-        <Alert className={`border-l-4 ${
-          weatherAlert.type === 'danger' ? 'border-red-500 bg-red-50' :
-          weatherAlert.type === 'warning' ? 'border-yellow-500 bg-yellow-50' :
-          'border-blue-500 bg-blue-50'
+        <Alert className={`border-l-4 rounded-2xl p-6 shadow-lg ${
+          weatherAlert.type === 'danger' ? 'border-red-500 bg-gradient-to-br from-red-50 to-red-100' :
+          weatherAlert.type === 'warning' ? 'border-yellow-500 bg-gradient-to-br from-yellow-50 to-yellow-100' :
+          'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100'
         }`}>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription className="font-medium">
+          <AlertTriangle className="h-5 w-5" />
+          <AlertDescription className="font-semibold text-lg ml-2">
             {weatherAlert.message}
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Voice Assistant Quick Actions */}
-      <Card className="card-farming">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-primary">
-            <Mic className="w-5 h-5" />
-            Quick Actions
+      {/* Enhanced Voice Assistant Quick Actions */}
+      <Card className="dashboard-card">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-2xl">
+            <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
+              <Mic className="w-6 h-6 text-white" />
+            </div>
+            Voice Assistant Quick Actions
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-6 mb-8">
             {quickActions.map((action) => (
               <Button
                 key={action.section}
                 variant="outline"
-                className="h-20 flex flex-col items-center justify-center gap-2 border-primary/20 hover:bg-primary/5"
+                className="h-24 p-6 flex flex-col items-center justify-center gap-3 border-2 hover:border-primary/50 transition-all duration-300 group rounded-2xl"
                 onClick={() => onSectionChange?.(action.section)}
               >
-                <action.icon className={`w-6 h-6 ${action.color}`} />
-                <span className="text-sm font-medium">{action.label}</span>
+                <action.icon className={`w-8 h-8 ${action.color} icon-bounce group-hover:scale-110`} />
+                <span className="text-sm font-semibold">{action.label}</span>
               </Button>
             ))}
           </div>
+
+          {/* Voice Controls */}
+          <div className="p-6 bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl border border-green-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
+                  <Volume2 className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-lg font-semibold text-gray-800">Voice Assistant</span>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  size="lg"
+                  variant={isListening ? "destructive" : "default"}
+                  onClick={isListening ? stopListening : startListening}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                    isListening 
+                      ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 animate-pulse' 
+                      : 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600'
+                  }`}
+                >
+                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  {isListening ? "Stop" : "Speak"}
+                </Button>
+              </div>
+            </div>
+            {transcript && (
+              <div className="mt-4 p-4 bg-white/70 rounded-xl border border-green-200">
+                <p className="text-gray-700 font-medium">
+                  🎤 You said: <span className="text-green-700 italic">"{transcript}"</span>
+                </p>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Seasonal Advice */}
-      <Card className="card-farming">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-primary">
-            <Calendar className="w-5 h-5" />
-            Seasonal Farming Advice
+      {/* Enhanced Seasonal Advice */}
+      <Card className="dashboard-card">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-2xl">
+            <div className="p-2 bg-gradient-to-br from-green-500 to-yellow-500 rounded-lg">
+              <Calendar className="w-6 h-6 text-white" />
+            </div>
+            🌾 Seasonal Farming Advice
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-              <Leaf className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {seasonalTip}
-              </p>
+          <div className="p-6 bg-gradient-to-br from-green-50 to-yellow-50 rounded-2xl border-l-4 border-green-500 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-yellow-500 flex items-center justify-center">
+                <Leaf className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="font-bold text-green-800 text-lg mb-2">Expert Seasonal Guidance</h4>
+                <p className="text-green-700 text-base leading-relaxed">
+                  {seasonalTip}
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Current Weather Summary */}
+      {/* Enhanced Current Weather Summary */}
       {weather && (
-        <Card className="card-farming">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <Thermometer className="w-5 h-5" />
-              Current Weather
+        <Card className="dashboard-card">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-2xl">
+              <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg">
+                <Cloud className="w-6 h-6 text-white" />
+              </div>
+              Current Weather Conditions
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold">{weather.current?.temp_c}°C</p>
-                <p className="text-sm text-muted-foreground">{weather.current?.condition?.text}</p>
-                <p className="text-xs text-muted-foreground">{weather.location?.name}</p>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="text-center p-4 bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border border-red-100">
+                <Thermometer className="w-8 h-8 text-red-500 mx-auto mb-3 icon-bounce" />
+                <p className="text-red-600 font-medium mb-1">Temperature</p>
+                <p className="text-red-800 font-bold text-2xl">{weather.current?.temp_c}°C</p>
               </div>
-              <div className="text-right text-sm text-muted-foreground">
-                <p>Humidity: {weather.current?.humidity}%</p>
-                <p>Wind: {weather.current?.wind_kph} km/h</p>
+              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                <Droplets className="w-8 h-8 text-blue-500 mx-auto mb-3 icon-bounce" />
+                <p className="text-blue-600 font-medium mb-1">Humidity</p>
+                <p className="text-blue-800 font-bold text-2xl">{weather.current?.humidity}%</p>
               </div>
+              <div className="text-center p-4 bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl border border-gray-100">
+                <Wind className="w-8 h-8 text-gray-500 mx-auto mb-3 icon-bounce" />
+                <p className="text-gray-600 font-medium mb-1">Wind Speed</p>
+                <p className="text-gray-800 font-bold text-2xl">{weather.current?.wind_kph} km/h</p>
+              </div>
+              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                <CloudRain className="w-8 h-8 text-green-500 mx-auto mb-3 icon-bounce" />
+                <p className="text-green-600 font-medium mb-1">Condition</p>
+                <p className="text-green-800 font-bold text-lg">{weather.current?.condition?.text}</p>
+              </div>
+            </div>
+            <div className="mt-4 text-center">
+              <p className="text-muted-foreground text-sm">📍 {weather.location?.name}</p>
             </div>
           </CardContent>
         </Card>

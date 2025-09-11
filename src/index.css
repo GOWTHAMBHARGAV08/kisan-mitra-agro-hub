@@ -46,15 +46,20 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* KisanMitra gradients */
+    /* Enhanced KisanMitra gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(25 70% 55%));
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
     --gradient-nature: linear-gradient(180deg, hsl(45 20% 98%), hsl(140 15% 95%));
+    --gradient-farming: linear-gradient(135deg, hsl(120 60% 50%) 0%, hsl(90 60% 60%) 50%, hsl(60 90% 70%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(142 30% 98%) 100%);
+    --gradient-dashboard: linear-gradient(135deg, hsl(142 40% 95%) 0%, hsl(120 30% 97%) 50%, hsl(100 40% 96%) 100%);
 
-    /* Farming-inspired shadows */
+    /* Enhanced farming-inspired shadows */
     --shadow-nature: 0 10px 30px -10px hsl(var(--primary) / 0.15);
     --shadow-card: 0 4px 20px -4px hsl(var(--primary) / 0.1);
+    --shadow-farming: 0 8px 25px -8px hsl(120 60% 50% / 0.25);
+    --shadow-hover: 0 12px 35px -10px hsl(var(--primary) / 0.4);
     
     /* Smooth transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -128,40 +133,79 @@ All colors MUST be HSL.
 }
 
 @layer components {
-  /* Custom KisanMitra component styles */
+  /* Enhanced KisanMitra component styles */
   .btn-farming {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-3 font-medium;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-8 py-3 font-semibold;
     background: var(--gradient-primary);
     box-shadow: var(--shadow-nature);
     transition: var(--transition-smooth);
   }
 
   .btn-farming:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 40px -10px hsl(var(--primary) / 0.25);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--shadow-hover);
   }
 
   .btn-secondary-farming {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-full px-8 py-3 font-medium;
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl px-8 py-3 font-semibold;
     background: var(--gradient-secondary);
     transition: var(--transition-smooth);
   }
 
+  .btn-secondary-farming:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--shadow-hover);
+  }
+
   .card-farming {
-    @apply bg-card rounded-xl p-6 border-0;
+    @apply bg-card rounded-2xl p-6 border border-primary/10;
+    background: var(--gradient-card);
     box-shadow: var(--shadow-card);
     backdrop-filter: blur(10px);
     transition: var(--transition-smooth);
   }
 
   .card-farming:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 60px -10px hsl(var(--primary) / 0.15);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .dashboard-card {
+    @apply bg-white/90 backdrop-blur-md rounded-2xl border border-green-100/50 transition-all duration-500 transform hover:-translate-y-1 hover:scale-[1.02];
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .dashboard-card:hover {
+    box-shadow: var(--shadow-hover);
+  }
+
+  .icon-bounce {
+    @apply transition-transform duration-300 hover:scale-110 hover:rotate-3;
   }
 
   .farming-pattern {
+    background: var(--gradient-dashboard);
     background-image: 
-      radial-gradient(circle at 25% 25%, hsl(var(--primary) / 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 75% 75%, hsl(var(--secondary) / 0.05) 0%, transparent 50%);
+      radial-gradient(circle at 20% 50%, hsl(var(--primary) / 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(var(--secondary) / 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, hsl(45 93% 47% / 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 60% 60%, hsl(120 40% 70% / 0.05) 0%, transparent 40%);
+  }
+
+  /* Enhanced animations */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
