@@ -171,7 +171,9 @@ Be specific about treatments, fertilizers, pesticides, or care instructions suit
     });
 
     if (!response.ok) {
-      throw new Error('Failed to analyze image');
+      const errorData = await response.json();
+      console.error('Gemini API Error Response:', errorData);
+      throw new Error(`Gemini API Error: ${errorData.error?.message || 'Failed to analyze image'}`);
     }
 
     const data = await response.json();

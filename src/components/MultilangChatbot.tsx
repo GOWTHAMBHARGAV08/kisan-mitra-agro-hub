@@ -174,7 +174,9 @@ export const MultilangChatbot = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response from AI');
+        const errorData = await response.json();
+        console.error('Gemini API Error Response:', errorData);
+        throw new Error(`Gemini API Error: ${errorData.error?.message || 'Unknown error'}`);
       }
 
       const data = await response.json();
