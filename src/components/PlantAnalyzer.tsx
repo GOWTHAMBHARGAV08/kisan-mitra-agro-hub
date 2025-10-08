@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
-const GEMINI_API_KEY = 'AIzaSyAkTptgpGBlZgKzcuzveRFgKNcXiVhpvaM';
+const GEMINI_API_KEY = 'AIzaSyCi4-k3UTPAjDWSBCCe6cZX-Uf9edBOFOA';
 
 interface AnalysisResult {
   plantName: string;

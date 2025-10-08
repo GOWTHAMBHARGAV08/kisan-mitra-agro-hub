@@ -49,7 +49,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
-const GEMINI_API_KEY = 'AIzaSyAkTptgpGBlZgKzcuzveRFgKNcXiVhpvaM';
+const GEMINI_API_KEY = 'AIzaSyCi4-k3UTPAjDWSBCCe6cZX-Uf9edBOFOA';
 
 interface ChatMessage {
   type: 'user' | 'bot';
