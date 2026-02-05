@@ -58,7 +58,10 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
                     />
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-primary">KisanMitra</h1>
+                    <h1 className="text-xl font-bold">
+                      <span className="text-orange-600">Kisan</span>
+                      <span className="text-primary">Mitra</span>
+                    </h1>
                     <p className="text-xs text-muted-foreground">Growing Crops, Growing Smiles</p>
                   </div>
                 </div>
