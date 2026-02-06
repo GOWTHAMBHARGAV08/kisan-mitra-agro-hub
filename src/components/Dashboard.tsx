@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GreetingSection } from './GreetingSection';
 import { WeatherSection } from './WeatherSection';
 import { PlantAnalyzer } from './PlantAnalyzer';
@@ -7,6 +7,7 @@ import { MultilangChatbot } from './MultilangChatbot';
 import { AppSidebar } from './AppSidebar';
 import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { supabase } from "@/integrations/supabase/client";
 
 const kisanmitraLogoUrl = '/lovable-uploads/3ad415cf-80f1-4add-92a5-d08cd8333756.png';
 
@@ -16,11 +17,27 @@ interface DashboardProps {
 
 export const Dashboard = ({ onLogout }: DashboardProps) => {
   const [activeSection, setActiveSection] = useState('home');
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single();
+        if (data?.display_name) setUserName(data.display_name);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'home':
-        return <GreetingSection onSectionChange={setActiveSection} />;
+        return <GreetingSection onSectionChange={setActiveSection} userName={userName} />;
       case 'weather':
         return <WeatherSection />;
       case 'plant-analyzer':
@@ -30,7 +47,7 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
       case 'chatbot':
         return <MultilangChatbot />;
       default:
-        return <GreetingSection onSectionChange={setActiveSection} />;
+        return <GreetingSection onSectionChange={setActiveSection} userName={userName} />;
     }
   };
 
