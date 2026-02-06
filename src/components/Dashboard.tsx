@@ -8,6 +8,7 @@ import { ProfileSettings } from './ProfileSettings';
 import { AppSidebar } from './AppSidebar';
 import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { User } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 
 const kisanmitraLogoUrl = '/lovable-uploads/3ad415cf-80f1-4add-92a5-d08cd8333756.png';
@@ -87,6 +88,14 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
                 </div>
                 <div className="flex items-center gap-2">
                   <SidebarTrigger className="bg-white/50 hover:bg-white/70 border border-primary/30" />
+                  <Button
+                    variant="outline"
+                    onClick={() => setActiveSection('profile')}
+                    className="rounded-full border-primary/30 hover:bg-primary/5"
+                  >
+                    <User className="h-4 w-4 mr-1" />
+                    Profile
+                  </Button>
                   <Button 
                     variant="outline" 
                     onClick={onLogout}
