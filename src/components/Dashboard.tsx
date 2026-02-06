@@ -4,6 +4,7 @@ import { WeatherSection } from './WeatherSection';
 import { PlantAnalyzer } from './PlantAnalyzer';
 import { PestFertilizerRecommendations } from './PestFertilizerRecommendations';
 import { MultilangChatbot } from './MultilangChatbot';
+import { ProfileSettings } from './ProfileSettings';
 import { AppSidebar } from './AppSidebar';
 import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -46,6 +47,8 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
         return <PestFertilizerRecommendations />;
       case 'chatbot':
         return <MultilangChatbot />;
+      case 'profile':
+        return <ProfileSettings />;
       default:
         return <GreetingSection onSectionChange={setActiveSection} userName={userName} />;
     }
