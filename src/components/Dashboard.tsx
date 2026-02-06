@@ -96,9 +96,9 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
                     Profile
                   </Button>
                   <Button 
-                    variant="outline" 
+                    variant="destructive" 
                     onClick={onLogout}
-                    className="rounded-full border-primary/30 hover:bg-primary/5"
+                    className="rounded-full shadow-md hover:shadow-lg transition-all"
                   >
                     Logout
                   </Button>
