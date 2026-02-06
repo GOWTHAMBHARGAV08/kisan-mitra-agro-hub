@@ -7,9 +7,10 @@ import { toast } from 'sonner';
 
 interface GreetingSectionProps {
   onSectionChange?: (section: string) => void;
+  userName?: string;
 }
 
-export const GreetingSection = ({ onSectionChange }: GreetingSectionProps) => {
+export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionProps) => {
   const [greeting, setGreeting] = useState('');
   const [currentIcon, setCurrentIcon] = useState<any>(Sun);
   const [weather, setWeather] = useState<any>(null);
@@ -20,14 +21,15 @@ export const GreetingSection = ({ onSectionChange }: GreetingSectionProps) => {
     const updateGreeting = () => {
       const currentHour = new Date().getHours();
       
+      const displayName = userName || 'Farmer';
       if (currentHour >= 5 && currentHour < 12) {
-        setGreeting('Good Morning, Farmer!');
+        setGreeting(`Good Morning, ${displayName}!`);
         setCurrentIcon(Sunrise);
       } else if (currentHour >= 12 && currentHour < 17) {
-        setGreeting('Good Afternoon, Farmer!');
+        setGreeting(`Good Afternoon, ${displayName}!`);
         setCurrentIcon(Sun);
       } else {
-        setGreeting('Good Evening, Farmer!');
+        setGreeting(`Good Evening, ${displayName}!`);
         setCurrentIcon(Moon);
       }
     };
@@ -35,7 +37,7 @@ export const GreetingSection = ({ onSectionChange }: GreetingSectionProps) => {
     updateGreeting();
     const interval = setInterval(updateGreeting, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [userName]);
 
   // Fetch weather data
   useEffect(() => {
