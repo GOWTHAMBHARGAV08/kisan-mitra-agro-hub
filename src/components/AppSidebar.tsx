@@ -28,7 +28,6 @@ const menuItems = [
   { id: 'plant-analyzer', title: 'Plant Health', icon: Leaf },
   { id: 'pest-fertilizer', title: 'Pest & Fertilizer', icon: Bug },
   { id: 'chatbot', title: 'AI Assistant', icon: MessageCircle },
-  { id: 'profile', title: 'Profile Settings', icon: User },
 ];
 
 const farmingTips = [
