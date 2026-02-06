@@ -89,9 +89,8 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
                 <div className="flex items-center gap-2">
                   <SidebarTrigger className="bg-white/50 hover:bg-white/70 border border-primary/30" />
                   <Button
-                    variant="outline"
                     onClick={() => setActiveSection('profile')}
-                    className="rounded-full border-primary/30 hover:bg-primary/5"
+                    className="rounded-full bg-gradient-to-r from-primary to-primary/70 text-primary-foreground hover:from-primary/90 hover:to-primary/60 shadow-md hover:shadow-lg transition-all"
                   >
                     <User className="h-4 w-4 mr-1" />
                     Profile
