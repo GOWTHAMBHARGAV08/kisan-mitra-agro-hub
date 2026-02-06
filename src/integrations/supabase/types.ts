@@ -16,23 +16,44 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          address: string | null
           created_at: string
+          crop_types: string | null
           display_name: string | null
+          district: string | null
+          farm_name: string | null
+          farm_size: string | null
           id: string
+          phone: string | null
+          state: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          address?: string | null
           created_at?: string
+          crop_types?: string | null
           display_name?: string | null
+          district?: string | null
+          farm_name?: string | null
+          farm_size?: string | null
           id?: string
+          phone?: string | null
+          state?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          address?: string | null
           created_at?: string
+          crop_types?: string | null
           display_name?: string | null
+          district?: string | null
+          farm_name?: string | null
+          farm_size?: string | null
           id?: string
+          phone?: string | null
+          state?: string | null
           updated_at?: string
           user_id?: string
         }
