@@ -48,8 +48,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-
-const GEMINI_API_KEY = 'AIzaSyCi4-k3UTPAjDWSBCCe6cZX-Uf9edBOFOA';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChatMessage {
   type: 'user' | 'bot';
@@ -142,47 +141,24 @@ export const MultilangChatbot = () => {
     });
   };
 
-  const callGeminiAPI = async (message: string, imageBase64?: string, language: string = 'english'): Promise<string> => {
+  const callFarmingChat = async (message: string, imageBase64?: string, language: string = 'english'): Promise<string> => {
     try {
-      const languagePrompt = languages[language as keyof typeof languages]?.prompt || 'Respond in English';
-      
-      const systemPrompt = `You are KisanMitra, an AI farming assistant specializing in Indian agriculture. ${languagePrompt}. Provide helpful, practical advice about farming, crops, weather, pest control, fertilizers, and agricultural practices. Keep responses concise and farmer-friendly.`;
-
-      const modelName = imageBase64 ? 'gemini-1.5-flash' : 'gemini-1.5-flash';
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: imageBase64 ? [
-              {
-                text: `${systemPrompt} Analyze this image and provide helpful advice. User question: ${message}`
-              },
-              {
-                inline_data: {
-                  mime_type: "image/jpeg",
-                  data: imageBase64
-                }
-              }
-            ] : [{
-              text: `${systemPrompt} User question: ${message}`
-            }]
-          }]
-        })
+      const { data, error } = await supabase.functions.invoke('farming-chat', {
+        body: { message, imageBase64, language },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Gemini API Error Response:', errorData);
-        throw new Error(`Gemini API Error: ${errorData.error?.message || 'Unknown error'}`);
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message);
       }
 
-      const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I couldn\'t process your question. Please try again.';
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      return data?.response || 'Sorry, I couldn\'t process your question. Please try again.';
     } catch (error) {
-      console.error('Gemini API Error:', error);
+      console.error('Farming chat error:', error);
       return 'I\'m having trouble connecting right now. Please check your internet connection and try again.';
     }
   };
@@ -348,9 +324,9 @@ export const MultilangChatbot = () => {
         const blob = await response.blob();
         const file = new File([blob], "image.jpg", { type: "image/jpeg" });
         const imageBase64 = await convertImageToBase64(file);
-        aiResponse = await callGeminiAPI(userMessage, imageBase64, selectedLanguage);
+        aiResponse = await callFarmingChat(userMessage, imageBase64, selectedLanguage);
       } else {
-        aiResponse = await callGeminiAPI(userMessage, undefined, selectedLanguage);
+        aiResponse = await callFarmingChat(userMessage, undefined, selectedLanguage);
       }
       
       setChatHistory(prev => [...prev, {
