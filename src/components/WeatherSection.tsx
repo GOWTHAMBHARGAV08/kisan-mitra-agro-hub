@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const WEATHER_API_KEY = "76e2744e2ea54d4492e152146251009";
 
@@ -42,8 +43,9 @@ interface WeatherData {
 export const WeatherSection = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [city, setCity] = useState('Delhi');
+  const [city, setCity] = useState('');
   const [searchCity, setSearchCity] = useState('');
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const { toast } = useToast();
 
   const fetchWeather = async (cityName: string) => {
@@ -77,7 +79,31 @@ export const WeatherSection = () => {
   };
 
   useEffect(() => {
-    fetchWeather(city);
+    const loadProfileAndWeather = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase
+            .from('profiles')
+            .select('district, state')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          
+          if (data?.district || data?.state) {
+            const location = [data.district, data.state].filter(Boolean).join(', ');
+            fetchWeather(location);
+            setProfileLoaded(true);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching profile location:', err);
+      }
+      // Fallback to Delhi if no profile location
+      fetchWeather('Delhi');
+      setProfileLoaded(true);
+    };
+    loadProfileAndWeather();
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
