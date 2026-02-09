@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, MapPin, Phone, Tractor, Save, Loader2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { User, MapPin, Phone, Tractor, Save, Loader2, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { LANGUAGES } from '@/constants/languages';
 
 interface ProfileData {
   display_name: string;
@@ -16,6 +18,7 @@ interface ProfileData {
   farm_name: string;
   farm_size: string;
   crop_types: string;
+  preferred_language: string;
 }
 
 const emptyProfile: ProfileData = {
@@ -27,6 +30,7 @@ const emptyProfile: ProfileData = {
   farm_name: '',
   farm_size: '',
   crop_types: '',
+  preferred_language: 'english',
 };
 
 export const ProfileSettings = () => {
@@ -41,9 +45,9 @@ export const ProfileSettings = () => {
       if (!user) return;
       setUserEmail(user.email || '');
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('profiles')
-        .select('display_name, phone, address, state, district, farm_name, farm_size, crop_types')
+        .select('display_name, phone, address, state, district, farm_name, farm_size, crop_types, preferred_language')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -57,6 +61,7 @@ export const ProfileSettings = () => {
           farm_name: data.farm_name || '',
           farm_size: data.farm_size || '',
           crop_types: data.crop_types || '',
+          preferred_language: data.preferred_language || 'english',
         });
       }
       setLoading(false);
@@ -84,6 +89,7 @@ export const ProfileSettings = () => {
         farm_name: profile.farm_name.trim() || null,
         farm_size: profile.farm_size.trim() || null,
         crop_types: profile.crop_types.trim() || null,
+        preferred_language: profile.preferred_language || 'english',
       })
       .eq('user_id', user.id);
 
@@ -189,6 +195,34 @@ export const ProfileSettings = () => {
               placeholder="Village / Town"
               maxLength={200}
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Preferred Language */}
+      <Card className="bg-white/80 backdrop-blur-sm border-2 border-primary/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg text-foreground">
+            <Globe className="h-5 w-5 text-primary" />
+            Preferred Language
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="preferred_language">Language for AI responses</Label>
+            <Select value={profile.preferred_language} onValueChange={(val) => updateField('preferred_language', val)}>
+              <SelectTrigger id="preferred_language">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">This will be used as the default language in Plant Health Analyzer and AI Assistant.</p>
           </div>
         </CardContent>
       </Card>
