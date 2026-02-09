@@ -1,9 +1,24 @@
 import { useState, useRef } from 'react';
-import { Leaf, Upload, Camera, X, CheckCircle, AlertTriangle, Bug, Pill, Shield, ShoppingCart } from 'lucide-react';
+import { Leaf, Upload, Camera, X, CheckCircle, AlertTriangle, Bug, Pill, Shield, ShoppingCart, Globe } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const LANGUAGES = [
+  { value: 'english', label: 'English' },
+  { value: 'hindi', label: 'हिन्दी (Hindi)' },
+  { value: 'tamil', label: 'தமிழ் (Tamil)' },
+  { value: 'telugu', label: 'తెలుగు (Telugu)' },
+  { value: 'kannada', label: 'ಕನ್ನಡ (Kannada)' },
+  { value: 'bengali', label: 'বাংলা (Bengali)' },
+  { value: 'marathi', label: 'मराठी (Marathi)' },
+  { value: 'gujarati', label: 'ગુજરાતી (Gujarati)' },
+  { value: 'malayalam', label: 'മലയാളം (Malayalam)' },
+  { value: 'punjabi', label: 'ਪੰਜਾਬੀ (Punjabi)' },
+  { value: 'odia', label: 'ଓଡ଼ିଆ (Odia)' },
+];
 
 interface AnalysisResult {
   plantName: string;
@@ -32,6 +47,7 @@ export const PlantAnalyzer = ({ onNavigateToStore }: { onNavigateToStore?: () =>
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [activeTab, setActiveTab] = useState<'analysis' | 'treatments' | 'products'>('analysis');
+  const [language, setLanguage] = useState('english');
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -128,7 +144,7 @@ export const PlantAnalyzer = ({ onNavigateToStore }: { onNavigateToStore?: () =>
 
   const analyzeWithGroq = async (imageBase64: string): Promise<AnalysisResult> => {
     const { data, error } = await supabase.functions.invoke('farming-chat', {
-      body: { imageBase64, mode: 'analyze' },
+      body: { imageBase64, mode: 'analyze', language },
     });
 
     if (error) {
@@ -277,10 +293,27 @@ export const PlantAnalyzer = ({ onNavigateToStore }: { onNavigateToStore?: () =>
   return (
     <Card className="card-farming">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-primary">
-          <Leaf className="w-5 h-5" />
-          Plant Health Analyzer
-        </CardTitle>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <Leaf className="w-5 h-5" />
+            Plant Health Analyzer
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-muted-foreground" />
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger className="w-[160px] h-8 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </CardHeader>
       
       <CardContent className="space-y-4">

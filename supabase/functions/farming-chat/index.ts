@@ -19,7 +19,7 @@ serve(async (req) => {
 
     // mode: "analyze" for plant health analyzer, default for chatbot
     if (mode === "analyze" && imageBase64) {
-      const result = await analyzePlantImage(GROQ_API_KEY, imageBase64, message);
+      const result = await analyzePlantImage(GROQ_API_KEY, imageBase64, message, language);
       return new Response(JSON.stringify({ response: result }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -92,20 +92,27 @@ async function callGroqVision(apiKey: string, messages: any[]): Promise<string> 
   return data.choices?.[0]?.message?.content || "Unable to generate response.";
 }
 
-async function analyzePlantImage(apiKey: string, imageBase64: string, userMessage?: string): Promise<string> {
-  const systemPrompt = `You are an expert plant pathologist AI for Indian farmers. Analyze the plant image and return ONLY a valid JSON object (no markdown, no code blocks) with this exact structure:
+async function analyzePlantImage(apiKey: string, imageBase64: string, userMessage?: string, language?: string): Promise<string> {
+  const languageMap: Record<string, string> = {
+    english: "English", hindi: "Hindi", tamil: "Tamil", telugu: "Telugu",
+    kannada: "Kannada", bengali: "Bengali", marathi: "Marathi",
+    gujarati: "Gujarati", malayalam: "Malayalam", punjabi: "Punjabi", odia: "Odia",
+  };
+  const langName = languageMap[language || "english"] || "English";
+
+  const systemPrompt = `You are an expert plant pathologist AI for Indian farmers. Analyze the plant image and return ONLY a valid JSON object (no markdown, no code blocks) with this exact structure. ALL string values in the JSON (plantName, description, diseaseDetected, recommendations, precautions) MUST be written in ${langName} language so the farmer can understand easily:
 {
-  "plantName": "name of the plant",
+  "plantName": "name of the plant in ${langName}",
   "status": "healthy" or "diseased" or "pest" or "nutrient_deficiency",
   "confidence": number 0-100,
-  "description": "detailed description of observations",
-  "diseaseDetected": "disease name if any, or null",
-  "recommendations": ["treatment 1", "treatment 2", "treatment 3"],
-  "precautions": ["precaution 1", "precaution 2", "precaution 3"],
+  "description": "detailed description in ${langName}",
+  "diseaseDetected": "disease name in ${langName} if any, or null",
+  "recommendations": ["treatment 1 in ${langName}", "treatment 2 in ${langName}", "treatment 3 in ${langName}"],
+  "precautions": ["precaution 1 in ${langName}", "precaution 2 in ${langName}", "precaution 3 in ${langName}"],
   "severity": "low" or "medium" or "high" (only if not healthy, otherwise null)
 }
 
-Focus on plant diseases, pest damage, nutrient deficiencies, and overall health. Provide treatments suitable for Indian farming conditions. Always add: "Consult a local agriculture officer before heavy chemical use." as a precaution.`;
+Focus on plant diseases, pest damage, nutrient deficiencies, and overall health. Provide treatments suitable for Indian farming conditions using simple, easy-to-understand ${langName} language. Avoid complex chemical names - use common/local names instead. Always add a precaution about consulting a local agriculture officer before heavy chemical use (in ${langName}).`;
 
   const messages = [
     { role: "system", content: systemPrompt },
