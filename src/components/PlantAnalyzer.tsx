@@ -1,24 +1,12 @@
 import { useState, useRef } from 'react';
-import { Leaf, Upload, Camera, X, CheckCircle, AlertTriangle, Bug, Pill, Shield, ShoppingCart, Globe } from 'lucide-react';
+import { Leaf, Upload, Camera, X, CheckCircle, AlertTriangle, Bug, Pill, Shield, ShoppingCart, Globe, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-const LANGUAGES = [
-  { value: 'english', label: 'English' },
-  { value: 'hindi', label: 'हिन्दी (Hindi)' },
-  { value: 'tamil', label: 'தமிழ் (Tamil)' },
-  { value: 'telugu', label: 'తెలుగు (Telugu)' },
-  { value: 'kannada', label: 'ಕನ್ನಡ (Kannada)' },
-  { value: 'bengali', label: 'বাংলা (Bengali)' },
-  { value: 'marathi', label: 'मराठी (Marathi)' },
-  { value: 'gujarati', label: 'ગુજરાતી (Gujarati)' },
-  { value: 'malayalam', label: 'മലയാളം (Malayalam)' },
-  { value: 'punjabi', label: 'ਪੰਜਾਬੀ (Punjabi)' },
-  { value: 'odia', label: 'ଓଡ଼ିଆ (Odia)' },
-];
+import { LANGUAGES } from '@/constants/languages';
+import { useProfileLanguage } from '@/hooks/useProfileLanguage';
 
 interface AnalysisResult {
   plantName: string;
@@ -43,14 +31,20 @@ interface DiseaseRecommendations {
 }
 
 export const PlantAnalyzer = ({ onNavigateToStore }: { onNavigateToStore?: () => void }) => {
+  const { profileLanguage } = useProfileLanguage();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [retranslating, setRetranslating] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [activeTab, setActiveTab] = useState<'analysis' | 'treatments' | 'products'>('analysis');
-  const [language, setLanguage] = useState('english');
+  const [language, setLanguage] = useState<string | null>(null);
+  const [lastImageBase64, setLastImageBase64] = useState<string | null>(null);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  // Use profile language as default once loaded
+  const effectiveLanguage = language ?? profileLanguage;
 
   // Disease to product mapping
   const getDiseaseRecommendations = (disease: string): DiseaseRecommendations => {
@@ -142,9 +136,9 @@ export const PlantAnalyzer = ({ onNavigateToStore }: { onNavigateToStore?: () =>
     });
   };
 
-  const analyzeWithGroq = async (imageBase64: string): Promise<AnalysisResult> => {
+  const analyzeWithGroq = async (imageBase64: string, lang?: string): Promise<AnalysisResult> => {
     const { data, error } = await supabase.functions.invoke('farming-chat', {
-      body: { imageBase64, mode: 'analyze', language },
+      body: { imageBase64, mode: 'analyze', language: lang || effectiveLanguage },
     });
 
     if (error) {
@@ -235,6 +229,7 @@ export const PlantAnalyzer = ({ onNavigateToStore }: { onNavigateToStore?: () =>
       const blob = await response.blob();
       const file = new File([blob], "plant.jpg", { type: "image/jpeg" });
       const imageBase64 = await convertImageToBase64(file);
+      setLastImageBase64(imageBase64);
       
       const result = await analyzeWithGroq(imageBase64);
       setAnalysisResult(result);
@@ -259,6 +254,21 @@ export const PlantAnalyzer = ({ onNavigateToStore }: { onNavigateToStore?: () =>
       URL.revokeObjectURL(selectedImage);
       setSelectedImage(null);
       setAnalysisResult(null);
+      setLastImageBase64(null);
+    }
+  };
+
+  const retranslateResults = async () => {
+    if (!lastImageBase64) return;
+    setRetranslating(true);
+    try {
+      const result = await analyzeWithGroq(lastImageBase64, effectiveLanguage);
+      setAnalysisResult(result);
+      toast({ title: "Re-translated", description: "Results updated in selected language." });
+    } catch {
+      toast({ title: "Error", description: "Failed to re-translate.", variant: "destructive" });
+    } finally {
+      setRetranslating(false);
     }
   };
 
@@ -300,7 +310,7 @@ export const PlantAnalyzer = ({ onNavigateToStore }: { onNavigateToStore?: () =>
           </CardTitle>
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-muted-foreground" />
-            <Select value={language} onValueChange={setLanguage}>
+            <Select value={effectiveLanguage} onValueChange={setLanguage}>
               <SelectTrigger className="w-[160px] h-8 text-sm">
                 <SelectValue />
               </SelectTrigger>
@@ -312,6 +322,19 @@ export const PlantAnalyzer = ({ onNavigateToStore }: { onNavigateToStore?: () =>
                 ))}
               </SelectContent>
             </Select>
+            {analysisResult && lastImageBase64 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={retranslateResults}
+                disabled={retranslating}
+                className="h-8 text-sm"
+                title="Re-translate results in selected language"
+              >
+                <RefreshCw className={`w-3 h-3 mr-1 ${retranslating ? 'animate-spin' : ''}`} />
+                {retranslating ? 'Translating...' : 'Re-translate'}
+              </Button>
+            )}
           </div>
         </div>
       </CardHeader>

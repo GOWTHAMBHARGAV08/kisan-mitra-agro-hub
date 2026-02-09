@@ -49,6 +49,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useProfileLanguage } from '@/hooks/useProfileLanguage';
 
 interface ChatMessage {
   type: 'user' | 'bot';
@@ -72,10 +73,11 @@ const languages = {
 };
 
 export const MultilangChatbot = () => {
+  const { profileLanguage } = useProfileLanguage();
   const [chatMessage, setChatMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedLanguage, setSelectedLanguage] = useState('english');
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<ISpeechRecognition | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
@@ -89,6 +91,8 @@ export const MultilangChatbot = () => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const effectiveLanguage = selectedLanguage ?? profileLanguage;
 
   // Initialize speech recognition
   useState(() => {
@@ -292,7 +296,7 @@ export const MultilangChatbot = () => {
       recognition.stop();
       setIsListening(false);
     } else {
-      const languageCode = languages[selectedLanguage as keyof typeof languages]?.code || 'en';
+      const languageCode = languages[effectiveLanguage as keyof typeof languages]?.code || 'en';
       recognition.lang = languageCode;
       recognition.start();
     }
@@ -313,7 +317,7 @@ export const MultilangChatbot = () => {
       type: 'user', 
       message: userMessage,
       image: imageToSend,
-      language: selectedLanguage
+      language: effectiveLanguage
     }]);
     
     try {
@@ -324,20 +328,20 @@ export const MultilangChatbot = () => {
         const blob = await response.blob();
         const file = new File([blob], "image.jpg", { type: "image/jpeg" });
         const imageBase64 = await convertImageToBase64(file);
-        aiResponse = await callFarmingChat(userMessage, imageBase64, selectedLanguage);
+        aiResponse = await callFarmingChat(userMessage, imageBase64, effectiveLanguage);
       } else {
-        aiResponse = await callFarmingChat(userMessage, undefined, selectedLanguage);
+        aiResponse = await callFarmingChat(userMessage, undefined, effectiveLanguage);
       }
       
       setChatHistory(prev => [...prev, {
         type: 'bot',
         message: aiResponse,
-        language: selectedLanguage
+        language: effectiveLanguage
       }]);
       
       // Automatically speak the response
       setTimeout(() => {
-        speakResponse(aiResponse, selectedLanguage, true);
+        speakResponse(aiResponse, effectiveLanguage, true);
       }, 500); // Small delay to ensure UI updates first
       
       if (imageToSend) {
@@ -352,7 +356,7 @@ export const MultilangChatbot = () => {
       setChatHistory(prev => [...prev, {
         type: 'bot',
         message: 'Sorry, I encountered an error. Please try asking your question again.',
-        language: selectedLanguage
+        language: effectiveLanguage
       }]);
     } finally {
       setIsLoading(false);
@@ -370,7 +374,7 @@ export const MultilangChatbot = () => {
         {/* Language Selection */}
         <div className="flex items-center gap-2">
           <Globe className="w-4 h-4 text-muted-foreground" />
-          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+          <Select value={effectiveLanguage} onValueChange={setSelectedLanguage}>
             <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
