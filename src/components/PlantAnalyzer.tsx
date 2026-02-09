@@ -3,8 +3,7 @@ import { Leaf, Upload, Camera, X, CheckCircle, AlertTriangle, Bug, Pill, Shield,
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-
-const GEMINI_API_KEY = 'AIzaSyCi4-k3UTPAjDWSBCCe6cZX-Uf9edBOFOA';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AnalysisResult {
   plantName: string;
@@ -127,82 +126,37 @@ export const PlantAnalyzer = ({ onNavigateToStore }: { onNavigateToStore?: () =>
     });
   };
 
-  const analyzeWithGemini = async (imageBase64: string): Promise<AnalysisResult> => {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            {
-              text: `You are an expert plant pathologist. Analyze this plant image and provide a detailed health assessment. Return your analysis in JSON format with the following structure:
-{
-  "plantName": "name of the plant species identified",
-  "status": "healthy|diseased|pest|nutrient_deficiency", 
-  "confidence": 0-100,
-  "description": "detailed description of what you observe",
-  "diseaseDetected": "specific disease name if any" (only if status is not healthy),
-  "recommendations": ["specific treatment 1", "treatment 2", "treatment 3"],
-  "precautions": ["preventive step 1", "preventive step 2", "preventive step 3"],
-  "severity": "low|medium|high" (only if status is not healthy)
-}
-
-Focus on:
-- Plant diseases (fungal, bacterial, viral)
-- Pest damage and identification
-- Nutrient deficiencies
-- Growth abnormalities
-- Leaf discoloration or spots
-- Overall plant health
-
-Be specific about treatments, fertilizers, pesticides, or care instructions suitable for Indian farming conditions.`
-            },
-            {
-              inline_data: {
-                mime_type: "image/jpeg",
-                data: imageBase64
-              }
-            }
-          ]
-        }]
-      })
+  const analyzeWithGroq = async (imageBase64: string): Promise<AnalysisResult> => {
+    const { data, error } = await supabase.functions.invoke('farming-chat', {
+      body: { imageBase64, mode: 'analyze' },
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Gemini API Error Response:', errorData);
-      throw new Error(`Gemini API Error: ${errorData.error?.message || 'Failed to analyze image'}`);
+    if (error) {
+      console.error('Edge function error:', error);
+      throw new Error(error.message);
     }
 
-    const data = await response.json();
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!aiResponse) {
-      throw new Error('No analysis result received');
+    if (data?.error) {
+      throw new Error(data.error);
     }
+
+    const aiResponse = data?.response || '';
 
     try {
-      // Extract JSON from the response
       const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed;
-      } else {
-        // Fallback parsing
-        return {
-          plantName: 'Unknown Plant',
-          status: 'diseased',
-          confidence: 75,
-          description: aiResponse,
-          recommendations: ['Consult with local agricultural expert', 'Monitor plant closely'],
-          precautions: ['Regular monitoring', 'Proper watering'],
-          severity: 'medium'
-        };
+        return JSON.parse(jsonMatch[0]);
       }
-    } catch (error) {
-      // Fallback result
+      return {
+        plantName: 'Unknown Plant',
+        status: 'diseased',
+        confidence: 75,
+        description: aiResponse,
+        recommendations: ['Consult with local agricultural expert', 'Monitor plant closely'],
+        precautions: ['Regular monitoring', 'Proper watering'],
+        severity: 'medium'
+      };
+    } catch {
       return {
         plantName: 'Unknown Plant',
         status: 'diseased',
@@ -266,7 +220,7 @@ Be specific about treatments, fertilizers, pesticides, or care instructions suit
       const file = new File([blob], "plant.jpg", { type: "image/jpeg" });
       const imageBase64 = await convertImageToBase64(file);
       
-      const result = await analyzeWithGemini(imageBase64);
+      const result = await analyzeWithGroq(imageBase64);
       setAnalysisResult(result);
       
       toast({
