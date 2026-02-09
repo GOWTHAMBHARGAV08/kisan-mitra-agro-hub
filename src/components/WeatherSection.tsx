@@ -189,6 +189,46 @@ export const WeatherSection = () => {
               </div>
             </div>
 
+            {/* Farmer Advisory */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-900 p-4 rounded-lg space-y-3">
+              <h4 className="font-semibold text-primary flex items-center gap-2">
+                🌾 Farmer Advisory
+              </h4>
+              {(() => {
+                const todayRain = weatherData.forecast.forecastday[0]?.day.daily_chance_of_rain ?? 0;
+                const tomorrowRain = weatherData.forecast.forecastday[1]?.day.daily_chance_of_rain ?? 0;
+                const windSpeed = weatherData.current.wind_kph;
+                const humidity = weatherData.current.humidity;
+                const temp = weatherData.current.temp_c;
+
+                const willRainToday = todayRain > 50;
+                const willRainTomorrow = tomorrowRain > 50;
+                const safeToSpray = !willRainToday && windSpeed < 15 && humidity < 85;
+                const shouldWater = !willRainToday && !willRainTomorrow && temp > 25;
+
+                return (
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-start gap-2">
+                      <span>{willRainToday ? '🌧️' : '☀️'}</span>
+                      <p><strong>Rain today?</strong> {willRainToday ? `Yes, ${todayRain}% chance. Protect harvested crops.` : `Unlikely (${todayRain}% chance).`}</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span>{willRainTomorrow ? '🌧️' : '☀️'}</span>
+                      <p><strong>Rain tomorrow?</strong> {willRainTomorrow ? `Yes, ${tomorrowRain}% chance.` : `Unlikely (${tomorrowRain}% chance).`}</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span>{safeToSpray ? '✅' : '❌'}</span>
+                      <p><strong>Safe to spray?</strong> {safeToSpray ? 'Yes, conditions are good for spraying.' : `No. ${willRainToday ? 'Rain expected.' : ''}${windSpeed >= 15 ? ' Wind too high.' : ''}${humidity >= 85 ? ' Humidity too high.' : ''}`}</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span>{shouldWater ? '💧' : '🚫'}</span>
+                      <p><strong>Water crops?</strong> {shouldWater ? "Yes, no rain expected and it's warm. Irrigate early morning." : `Not needed. ${willRainToday || willRainTomorrow ? 'Rain expected soon.' : 'Cool enough.'}`}</p>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
             {/* 3-Day Forecast */}
             <div>
               <h4 className="font-semibold text-primary mb-3">3-Day Forecast</h4>
