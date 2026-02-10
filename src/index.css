@@ -125,6 +125,10 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground;
     background: 
@@ -135,6 +139,7 @@ All colors MUST be HSL.
     background-position: center;
     background-attachment: fixed;
     min-height: 100vh;
+    overflow-x: hidden;
   }
 }
 

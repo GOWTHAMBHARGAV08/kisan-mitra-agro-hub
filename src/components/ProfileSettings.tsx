@@ -114,7 +114,7 @@ export const ProfileSettings = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-2xl mx-auto">
+    <div className="space-y-6 animate-fade-in max-w-2xl mx-auto w-full overflow-hidden">
       <div className="text-center space-y-2">
         <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-r from-primary to-emerald-600 flex items-center justify-center text-white shadow-lg">
           <User className="h-10 w-10" />

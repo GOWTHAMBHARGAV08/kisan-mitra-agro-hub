@@ -173,9 +173,9 @@ export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionPr
   const stopListening = () => setIsListening(false);
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in w-full overflow-hidden">
       {/* Hero Banner */}
-      <div className="text-center space-y-6 py-8">
+      <div className="text-center space-y-4 sm:space-y-6 py-4 sm:py-8">
         <div className="flex items-center justify-center gap-4 mb-6">
           <div className="w-16 h-16">
             <img 
@@ -185,7 +185,7 @@ export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionPr
             />
           </div>
           <div className="text-left">
-            <h1 className="text-4xl md:text-5xl font-bold">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold">
               <span className="text-orange-600">Kisan</span>
               <span className="bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent">Mitra</span>
             </h1>
@@ -193,26 +193,26 @@ export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionPr
           </div>
         </div>
         
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
           Your AI-powered farming assistant for crop care, weather updates, and farm support.
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-6 sm:mt-8">
           <Button 
             size="lg" 
-            className="btn-farming text-lg px-8 py-6 h-auto"
+            className="btn-farming text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto w-full sm:w-auto"
             onClick={() => onSectionChange?.('plant-analyzer')}
           >
-            <Leaf className="h-6 w-6 mr-3" />
+            <Leaf className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
             Start Plant Health Check
           </Button>
           <Button 
             size="lg" 
             variant="outline"
-            className="text-lg px-8 py-6 h-auto border-2 border-primary/30 hover:bg-primary/10"
+            className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto border-2 border-primary/30 hover:bg-primary/10 w-full sm:w-auto"
             onClick={() => onSectionChange?.('chatbot')}
           >
-            <MessageCircle className="h-6 w-6 mr-3" />
+            <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
             Ask AI Assistant
           </Button>
         </div>
@@ -233,7 +233,7 @@ export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionPr
       {/* Quick Access Tiles */}
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-center text-foreground">Quick Access</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
           {quickAccessTiles.map((tile, index) => (
             <Card 
               key={tile.section} 
@@ -241,12 +241,12 @@ export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionPr
               onClick={() => onSectionChange?.(tile.section)}
             >
               <div className={`h-2 bg-gradient-to-r ${tile.gradient}`}></div>
-              <CardContent className="p-6 text-center">
-                <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r ${tile.gradient} flex items-center justify-center text-white shadow-lg group-hover:shadow-xl transition-shadow`}>
-                  <tile.icon className="h-8 w-8" />
+              <CardContent className="p-3 sm:p-6 text-center">
+                <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-4 rounded-full bg-gradient-to-r ${tile.gradient} flex items-center justify-center text-white shadow-lg group-hover:shadow-xl transition-shadow`}>
+                  <tile.icon className="h-6 w-6 sm:h-8 sm:w-8" />
                 </div>
-                <h3 className="font-bold text-lg text-foreground mb-2">{tile.title}</h3>
-                <p className="text-sm text-muted-foreground">{tile.description}</p>
+                <h3 className="font-bold text-sm sm:text-lg text-foreground mb-1 sm:mb-2">{tile.title}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{tile.description}</p>
               </CardContent>
             </Card>
           ))}
@@ -274,7 +274,7 @@ export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionPr
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <Thermometer className="h-5 w-5 text-red-500" />
@@ -351,21 +351,22 @@ export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionPr
 
       {/* Voice Assistant - Simplified */}
       <Card className="bg-gradient-to-r from-purple-50/90 to-indigo-50/90 border-purple-200 backdrop-blur-sm">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center text-white">
-                <MessageCircle className="h-6 w-6" />
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center text-white shrink-0">
+                <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
-                <h3 className="font-semibold text-purple-700">Voice Commands</h3>
-                <p className="text-sm text-purple-600">Say "Go to weather" or "Open plant analyzer"</p>
+                <h3 className="font-semibold text-purple-700 text-sm sm:text-base">Voice Commands</h3>
+                <p className="text-xs sm:text-sm text-purple-600">Say "Go to weather" or "Open plant analyzer"</p>
               </div>
             </div>
             <Button 
               onClick={isListening ? stopListening : startListening}
               variant={isListening ? "destructive" : "default"}
-              className={`transition-all duration-300 ${isListening ? 'bg-red-500 hover:bg-red-600 animate-pulse' : 'btn-farming'}`}
+              size="sm"
+              className={`transition-all duration-300 w-full sm:w-auto ${isListening ? 'bg-red-500 hover:bg-red-600 animate-pulse' : 'btn-farming'}`}
             >
               {isListening ? <MicOff className="h-4 w-4 mr-2" /> : <Mic className="h-4 w-4 mr-2" />}
               {isListening ? 'Stop' : 'Listen'}
