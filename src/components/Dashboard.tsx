@@ -62,7 +62,7 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full bg-gradient-nature farming-pattern flex">
+      <div className="min-h-screen w-full bg-gradient-nature farming-pattern flex overflow-x-hidden">
         {/* Sidebar */}
         <AppSidebar 
           activeSection={activeSection} 
@@ -70,10 +70,10 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
         />
         
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
           <header className="bg-white/80 backdrop-blur-md border-b border-border/50 sticky top-0 z-40">
-            <div className="container mx-auto px-4 py-4">
+            <div className="px-3 sm:px-4 py-3 sm:py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12">
@@ -84,11 +84,11 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
                     />
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold">
+                    <h1 className="text-lg sm:text-xl font-bold">
                       <span className="text-orange-600">Kisan</span>
                       <span className="text-primary">Mitra</span>
                     </h1>
-                    <p className="text-xs text-muted-foreground">Growing Crops, Growing Smiles</p>
+                    <p className="text-xs text-muted-foreground hidden sm:block">Growing Crops, Growing Smiles</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -106,8 +106,8 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 container mx-auto px-4 py-8">
-            <div className="max-w-4xl mx-auto">
+          <main className="flex-1 px-3 sm:px-4 py-4 sm:py-8">
+            <div className="max-w-4xl mx-auto w-full">
               {renderActiveSection()}
             </div>
           </main>
