@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Send, MessageCircle, Camera, Upload, X, Globe, Mic, MicOff, Volume2 } from 'lucide-react';
+import { Send, MessageCircle, Camera, Upload, X, Mic, MicOff, Volume2 } from 'lucide-react';
 
 // Type declarations for Web Speech API
 interface ISpeechRecognition extends EventTarget {
@@ -46,10 +46,11 @@ interface SpeechRecognitionAlternative {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useProfileLanguage } from '@/hooks/useProfileLanguage';
+import { LANGUAGES, getLanguageByValue } from '@/constants/languages';
+import { LanguageTileSelector } from './LanguageTileSelector';
 
 interface ChatMessage {
   type: 'user' | 'bot';
@@ -58,18 +59,9 @@ interface ChatMessage {
   language?: string;
 }
 
-const languages = {
-  english: { code: 'en', name: 'English', prompt: 'Respond in English' },
-  hindi: { code: 'hi', name: 'हिंदी (Hindi)', prompt: 'Respond in Hindi language' },
-  tamil: { code: 'ta', name: 'தமிழ் (Tamil)', prompt: 'Respond in Tamil language' },
-  telugu: { code: 'te', name: 'తెలుగు (Telugu)', prompt: 'Respond in Telugu language' },
-  kannada: { code: 'kn', name: 'ಕನ್ನಡ (Kannada)', prompt: 'Respond in Kannada language' },
-  bengali: { code: 'bn', name: 'বাংলা (Bengali)', prompt: 'Respond in Bengali language' },
-  marathi: { code: 'mr', name: 'मराठी (Marathi)', prompt: 'Respond in Marathi language' },
-  gujarati: { code: 'gu', name: 'ગુજરાતી (Gujarati)', prompt: 'Respond in Gujarati language' },
-  malayalam: { code: 'ml', name: 'മലയാളം (Malayalam)', prompt: 'Respond in Malayalam language' },
-  punjabi: { code: 'pa', name: 'ਪੰਜਾਬੀ (Punjabi)', prompt: 'Respond in Punjabi language' },
-  odia: { code: 'or', name: 'ଓଡ଼ିଆ (Odia)', prompt: 'Respond in Odia language' }
+const languageCodeMap: Record<string, string> = {
+  english: 'en', hindi: 'hi', tamil: 'ta', telugu: 'te', kannada: 'kn',
+  bengali: 'bn', marathi: 'mr', gujarati: 'gu', malayalam: 'ml', punjabi: 'pa', odia: 'or'
 };
 
 export const MultilangChatbot = () => {
@@ -221,7 +213,7 @@ export const MultilangChatbot = () => {
       speechSynthesis.cancel();
       
       const utterance = new SpeechSynthesisUtterance(text);
-      const languageCode = languages[language as keyof typeof languages]?.code || 'en';
+      const languageCode = languageCodeMap[language] || 'en';
       
       // Set language
       utterance.lang = languageCode;
@@ -245,7 +237,7 @@ export const MultilangChatbot = () => {
         if (!autoSpeak) {
           toast({
             title: "🔊 Speaking",
-            description: "Playing response in " + languages[language as keyof typeof languages]?.name,
+            description: "Playing response in " + (getLanguageByValue(language)?.label || language),
           });
         }
       };
@@ -296,7 +288,7 @@ export const MultilangChatbot = () => {
       recognition.stop();
       setIsListening(false);
     } else {
-      const languageCode = languages[effectiveLanguage as keyof typeof languages]?.code || 'en';
+      const languageCode = languageCodeMap[effectiveLanguage] || 'en';
       recognition.lang = languageCode;
       recognition.start();
     }
@@ -372,21 +364,11 @@ export const MultilangChatbot = () => {
         </CardTitle>
         
         {/* Language Selection */}
-        <div className="flex items-center gap-2">
-          <Globe className="w-4 h-4 text-muted-foreground" />
-          <Select value={effectiveLanguage} onValueChange={setSelectedLanguage}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(languages).map(([key, lang]) => (
-                <SelectItem key={key} value={key}>
-                  {lang.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <LanguageTileSelector
+          value={effectiveLanguage}
+          onChange={setSelectedLanguage}
+          compact
+        />
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -417,7 +399,7 @@ export const MultilangChatbot = () => {
                   <div className="whitespace-pre-wrap text-sm leading-relaxed">{chat.message}</div>
                   {chat.language && chat.language !== 'english' && (
                     <div className="text-xs opacity-70 mt-1">
-                      {languages[chat.language as keyof typeof languages]?.name}
+                      {getLanguageByValue(chat.language)?.label || chat.language}
                     </div>
                   )}
                 </div>

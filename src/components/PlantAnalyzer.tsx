@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
-import { Leaf, Upload, Camera, X, CheckCircle, AlertTriangle, Bug, Pill, Shield, ShoppingCart, Globe, RefreshCw } from 'lucide-react';
+import { Leaf, Upload, Camera, X, CheckCircle, AlertTriangle, Bug, Pill, Shield, ShoppingCart, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LANGUAGES } from '@/constants/languages';
 import { useProfileLanguage } from '@/hooks/useProfileLanguage';
+import { LanguageTileSelector } from './LanguageTileSelector';
 
 interface AnalysisResult {
   plantName: string;
@@ -308,35 +308,25 @@ export const PlantAnalyzer = ({ onNavigateToStore }: { onNavigateToStore?: () =>
             <Leaf className="w-5 h-5" />
             Plant Health Analyzer
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-muted-foreground" />
-            <Select value={effectiveLanguage} onValueChange={setLanguage}>
-              <SelectTrigger className="w-[160px] h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {analysisResult && lastImageBase64 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={retranslateResults}
-                disabled={retranslating}
-                className="h-8 text-sm"
-                title="Re-translate results in selected language"
-              >
-                <RefreshCw className={`w-3 h-3 mr-1 ${retranslating ? 'animate-spin' : ''}`} />
-                {retranslating ? 'Translating...' : 'Re-translate'}
-              </Button>
-            )}
-          </div>
+          {analysisResult && lastImageBase64 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={retranslateResults}
+              disabled={retranslating}
+              className="h-8 text-sm"
+              title="Re-translate results in selected language"
+            >
+              <RefreshCw className={`w-3 h-3 mr-1 ${retranslating ? 'animate-spin' : ''}`} />
+              {retranslating ? 'Translating...' : 'Re-translate'}
+            </Button>
+          )}
         </div>
+        <LanguageTileSelector
+          value={effectiveLanguage}
+          onChange={setLanguage}
+          compact
+        />
       </CardHeader>
       
       <CardContent className="space-y-4">
