@@ -27,10 +27,15 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
       if (user) {
         const { data } = await supabase
           .from('profiles')
-          .select('display_name')
+          .select('display_name, phone, state, district, farm_name')
           .eq('user_id', user.id)
           .single();
         if (data?.display_name) setUserName(data.display_name);
+        // Redirect new users who haven't filled profile details
+        const isProfileIncomplete = !data?.display_name || (!data?.state && !data?.district);
+        if (isProfileIncomplete) {
+          setActiveSection('profile');
+        }
       }
     };
     fetchProfile();
@@ -94,13 +99,6 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
                   >
                     <User className="h-4 w-4 mr-1" />
                     Profile
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    onClick={onLogout}
-                    className="rounded-full shadow-md hover:shadow-lg transition-all"
-                  >
-                    Logout
                   </Button>
                 </div>
               </div>

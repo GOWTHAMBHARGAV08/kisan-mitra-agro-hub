@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, MapPin, Phone, Tractor, Save, Loader2, Globe } from 'lucide-react';
+import { User, MapPin, Phone, Tractor, Save, Loader2, Globe, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { LANGUAGES } from '@/constants/languages';
@@ -278,6 +278,15 @@ export const ProfileSettings = () => {
       >
         {saving ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <Save className="h-5 w-5 mr-2" />}
         {saving ? 'Saving...' : 'Save Profile'}
+      </Button>
+
+      <Button
+        variant="destructive"
+        onClick={async () => { await supabase.auth.signOut(); }}
+        className="w-full text-lg py-6 h-auto rounded-full shadow-md hover:shadow-lg transition-all"
+      >
+        <LogOut className="h-5 w-5 mr-2" />
+        Logout
       </Button>
     </div>
   );
