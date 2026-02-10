@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, MapPin, Phone, Tractor, Save, Loader2, Globe, LogOut } from 'lucide-react';
+import { User, MapPin, Phone, Tractor, Save, Loader2, Globe, LogOut, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { LANGUAGES } from '@/constants/languages';
@@ -206,23 +206,27 @@ export const ProfileSettings = () => {
             <Globe className="h-5 w-5 text-primary" />
             Preferred Language
           </CardTitle>
+          <p className="text-xs text-muted-foreground">This will be used as the default language in Plant Health Analyzer and AI Assistant.</p>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="preferred_language">Language for AI responses</Label>
-            <Select value={profile.preferred_language} onValueChange={(val) => updateField('preferred_language', val)}>
-              <SelectTrigger id="preferred_language">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">This will be used as the default language in Plant Health Analyzer and AI Assistant.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {LANGUAGES.map((lang) => (
+              <button
+                key={lang.value}
+                type="button"
+                onClick={() => updateField('preferred_language', lang.value)}
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition-all text-left ${
+                  profile.preferred_language === lang.value
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border/50 bg-white/50 text-foreground hover:border-primary/30 hover:bg-primary/5'
+                }`}
+              >
+                {profile.preferred_language === lang.value && (
+                  <Check className="h-4 w-4 shrink-0 text-primary" />
+                )}
+                <span className="truncate">{lang.label}</span>
+              </button>
+            ))}
           </div>
         </CardContent>
       </Card>
