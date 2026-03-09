@@ -203,28 +203,8 @@ export const GreetingSection = ({ onSectionChange, userName, userState, userDist
         </Card>
       )}
 
-      {/* Quick Access Tiles */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-center text-foreground">Quick Access</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-          {quickAccessTiles.map((tile, index) => (
-            <Card 
-              key={tile.section} 
-              className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 bg-white/80 backdrop-blur-sm border-2 hover:border-primary/30 overflow-hidden"
-              onClick={() => onSectionChange?.(tile.section)}
-            >
-              <div className={`h-2 bg-gradient-to-r ${tile.gradient}`}></div>
-              <CardContent className="p-3 sm:p-6 text-center">
-                <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-4 rounded-full bg-gradient-to-r ${tile.gradient} flex items-center justify-center text-white shadow-lg group-hover:shadow-xl transition-shadow`}>
-                  <tile.icon className="h-6 w-6 sm:h-8 sm:w-8" />
-                </div>
-                <h3 className="font-bold text-sm sm:text-lg text-foreground mb-1 sm:mb-2">{tile.title}</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{tile.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      {/* Local Crop Prices */}
+      <CropPrices state={userState || ''} district={userDistrict || ''} />
 
       {/* Weather Snapshot */}
       {weather && (
