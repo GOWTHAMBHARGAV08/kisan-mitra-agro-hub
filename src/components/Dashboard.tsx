@@ -47,7 +47,7 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'home':
-        return <GreetingSection onSectionChange={setActiveSection} userName={userName} />;
+        return <GreetingSection onSectionChange={setActiveSection} userName={userName} userState={userState} userDistrict={userDistrict} />;
       case 'weather':
         return <WeatherSection />;
       case 'plant-analyzer':
