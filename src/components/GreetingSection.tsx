@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sun, Moon, Cloud, Sunrise, Sunset, CloudRain, Mic, MicOff, Wind, Thermometer, Droplets, MapPin, Leaf, MessageCircle, ShoppingCart, Phone, Globe, Users, ArrowRight, TrendingUp } from 'lucide-react';
+import { Sun, Moon, Cloud, Sunrise, Sunset, CloudRain, Mic, MicOff, Wind, Thermometer, Droplets, MapPin, Leaf, MessageCircle, Phone, Globe, Users, ArrowRight, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
+import { CropPrices } from './CropPrices';
 
 interface GreetingSectionProps {
   onSectionChange?: (section: string) => void;
   userName?: string;
+  userState?: string;
+  userDistrict?: string;
 }
 
 export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionProps) => {
