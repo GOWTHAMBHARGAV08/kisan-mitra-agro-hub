@@ -127,7 +127,13 @@ const getCropPrices = (state: string, district: string): CropPrice[] => {
   return basePrices[stateKey] || basePrices['default'];
 };
 
-// Generate simulated 30-day price history for a crop
+const TrendIcon = ({ trend }: { trend: 'up' | 'down' | 'stable' }) => {
+  if (trend === 'up') return <TrendingUp className="h-4 w-4 text-green-600" />;
+  if (trend === 'down') return <TrendingDown className="h-4 w-4 text-red-500" />;
+  return <Minus className="h-4 w-4 text-muted-foreground" />;
+};
+
+// Generate simulated 6-month price history for a crop
 const generatePriceHistory = (currentPrice: number, trend: 'up' | 'down' | 'stable') => {
   const data = [];
   const months = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
