@@ -13,7 +13,7 @@ interface GreetingSectionProps {
   userDistrict?: string;
 }
 
-export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionProps) => {
+export const GreetingSection = ({ onSectionChange, userName, userState, userDistrict }: GreetingSectionProps) => {
   const [greeting, setGreeting] = useState('');
   const [currentIcon, setCurrentIcon] = useState<any>(Sun);
   const [weather, setWeather] = useState<any>(null);
