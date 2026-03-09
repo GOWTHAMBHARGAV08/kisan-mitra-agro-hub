@@ -2,15 +2,18 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sun, Moon, Cloud, Sunrise, Sunset, CloudRain, Mic, MicOff, Wind, Thermometer, Droplets, MapPin, Leaf, MessageCircle, ShoppingCart, Phone, Globe, Users, ArrowRight, TrendingUp } from 'lucide-react';
+import { Sun, Moon, Cloud, Sunrise, Sunset, CloudRain, Mic, MicOff, Wind, Thermometer, Droplets, MapPin, Leaf, MessageCircle, Phone, Globe, Users, ArrowRight, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
+import { CropPrices } from './CropPrices';
 
 interface GreetingSectionProps {
   onSectionChange?: (section: string) => void;
   userName?: string;
+  userState?: string;
+  userDistrict?: string;
 }
 
-export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionProps) => {
+export const GreetingSection = ({ onSectionChange, userName, userState, userDistrict }: GreetingSectionProps) => {
   const [greeting, setGreeting] = useState('');
   const [currentIcon, setCurrentIcon] = useState<any>(Sun);
   const [weather, setWeather] = useState<any>(null);
@@ -64,36 +67,6 @@ export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionPr
     return () => clearInterval(weatherInterval);
   }, []);
 
-  const quickAccessTiles = [
-    { 
-      icon: Leaf, 
-      title: 'Crop Care', 
-      description: 'Plant health analysis',
-      section: 'plant-analyzer', 
-      gradient: 'from-emerald-500 to-green-600' 
-    },
-    { 
-      icon: CloudRain, 
-      title: 'Weather', 
-      description: 'Real-time forecast',
-      section: 'weather', 
-      gradient: 'from-blue-500 to-sky-600' 
-    },
-    { 
-      icon: ShoppingCart, 
-      title: 'Store', 
-      description: 'Seeds & fertilizer',
-      section: 'pest-fertilizer', 
-      gradient: 'from-amber-500 to-orange-600' 
-    },
-    { 
-      icon: MessageCircle, 
-      title: 'AI Assistant', 
-      description: 'Get farming advice',
-      section: 'chatbot', 
-      gradient: 'from-purple-500 to-indigo-600' 
-    }
-  ];
 
   const supportLinks = [
     { icon: Phone, label: 'Helpline', subtitle: '1800-XXX-XXXX' },
@@ -230,28 +203,8 @@ export const GreetingSection = ({ onSectionChange, userName }: GreetingSectionPr
         </Card>
       )}
 
-      {/* Quick Access Tiles */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-center text-foreground">Quick Access</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-          {quickAccessTiles.map((tile, index) => (
-            <Card 
-              key={tile.section} 
-              className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 bg-white/80 backdrop-blur-sm border-2 hover:border-primary/30 overflow-hidden"
-              onClick={() => onSectionChange?.(tile.section)}
-            >
-              <div className={`h-2 bg-gradient-to-r ${tile.gradient}`}></div>
-              <CardContent className="p-3 sm:p-6 text-center">
-                <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-4 rounded-full bg-gradient-to-r ${tile.gradient} flex items-center justify-center text-white shadow-lg group-hover:shadow-xl transition-shadow`}>
-                  <tile.icon className="h-6 w-6 sm:h-8 sm:w-8" />
-                </div>
-                <h3 className="font-bold text-sm sm:text-lg text-foreground mb-1 sm:mb-2">{tile.title}</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{tile.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      {/* Local Crop Prices */}
+      <CropPrices state={userState || ''} district={userDistrict || ''} />
 
       {/* Weather Snapshot */}
       {weather && (

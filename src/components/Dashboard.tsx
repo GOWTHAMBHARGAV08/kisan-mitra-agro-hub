@@ -20,6 +20,8 @@ interface DashboardProps {
 export const Dashboard = ({ onLogout }: DashboardProps) => {
   const [activeSection, setActiveSection] = useState('home');
   const [userName, setUserName] = useState('');
+  const [userState, setUserState] = useState('');
+  const [userDistrict, setUserDistrict] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -31,7 +33,8 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
           .eq('user_id', user.id)
           .single();
         if (data?.display_name) setUserName(data.display_name);
-        // Redirect new users who haven't filled profile details
+        if (data?.state) setUserState(data.state);
+        if (data?.district) setUserDistrict(data.district);
         const isProfileIncomplete = !data?.display_name || (!data?.state && !data?.district);
         if (isProfileIncomplete) {
           setActiveSection('profile');
@@ -44,7 +47,7 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'home':
-        return <GreetingSection onSectionChange={setActiveSection} userName={userName} />;
+        return <GreetingSection onSectionChange={setActiveSection} userName={userName} userState={userState} userDistrict={userDistrict} />;
       case 'weather':
         return <WeatherSection />;
       case 'plant-analyzer':
@@ -56,7 +59,7 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
       case 'profile':
         return <ProfileSettings />;
       default:
-        return <GreetingSection onSectionChange={setActiveSection} userName={userName} />;
+        return <GreetingSection onSectionChange={setActiveSection} userName={userName} userState={userState} userDistrict={userDistrict} />;
     }
   };
 
