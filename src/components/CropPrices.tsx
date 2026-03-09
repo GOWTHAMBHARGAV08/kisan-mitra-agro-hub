@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, TrendingUp, TrendingDown, Minus, IndianRupee } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MapPin, TrendingUp, TrendingDown, Minus, IndianRupee, X } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface CropPricesProps {
   state: string;
@@ -131,9 +133,40 @@ const TrendIcon = ({ trend }: { trend: 'up' | 'down' | 'stable' }) => {
   return <Minus className="h-4 w-4 text-muted-foreground" />;
 };
 
+// Generate simulated 6-month price history for a crop
+const generatePriceHistory = (currentPrice: number, trend: 'up' | 'down' | 'stable') => {
+  const data = [];
+  const months = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+  const daysPerMonth = 5;
+  
+  let price = currentPrice * (trend === 'up' ? 0.88 : trend === 'down' ? 1.08 : 0.97);
+  
+  for (let m = 0; m < months.length; m++) {
+    for (let d = 0; d < daysPerMonth; d++) {
+      const volatility = currentPrice * 0.015;
+      const trendFactor = trend === 'up' ? 0.004 : trend === 'down' ? -0.003 : 0.001;
+      price = price * (1 + trendFactor) + (Math.random() - 0.45) * volatility;
+      price = Math.max(price, currentPrice * 0.7);
+      
+      if (m === months.length - 1 && d === daysPerMonth - 1) {
+        price = currentPrice;
+      }
+      
+      data.push({
+        date: `${months[m]} ${(d + 1) * 5}`,
+        price: Math.round(price),
+      });
+    }
+  }
+  return data;
+};
+
 export const CropPrices = ({ state, district }: CropPricesProps) => {
   const prices = getCropPrices(state, district);
   const locationLabel = district && state ? `${district}, ${state}` : state || 'India';
+  const [selectedCrop, setSelectedCrop] = useState<CropPrice | null>(null);
+
+  const priceHistory = selectedCrop ? generatePriceHistory(selectedCrop.price, selectedCrop.trend) : [];
 
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-2 border-amber-200/50">
@@ -148,14 +181,83 @@ export const CropPrices = ({ state, district }: CropPricesProps) => {
             {locationLabel}
           </Badge>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">Indicative mandi prices · Updated daily</p>
+        <p className="text-xs text-muted-foreground mt-1">Indicative mandi prices · Tap a crop to see price trend</p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {/* Price Chart */}
+        {selectedCrop && (
+          <div className="bg-gradient-to-b from-amber-50/80 to-white rounded-xl border border-amber-200 p-3 sm:p-4 animate-fade-in">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="font-bold text-base sm:text-lg text-foreground">{selectedCrop.name}</h3>
+                <p className="text-xs text-muted-foreground">6-month price trend · {selectedCrop.unit}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full"
+                onClick={() => setSelectedCrop(null)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="h-48 sm:h-56 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={priceHistory}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
+                    interval={4}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                    domain={['auto', 'auto']}
+                    tickFormatter={(v) => `₹${(v / 1000).toFixed(1)}k`}
+                    width={50}
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => [`₹${value.toLocaleString('en-IN')}`, 'Price']}
+                    contentStyle={{ 
+                      borderRadius: '8px', 
+                      border: '1px solid hsl(var(--border))',
+                      background: 'hsl(var(--background))',
+                      fontSize: '12px'
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="price" 
+                    stroke={selectedCrop.trend === 'up' ? '#16a34a' : selectedCrop.trend === 'down' ? '#ef4444' : '#f59e0b'}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+              <span>Current: <strong className="text-foreground">₹{selectedCrop.price.toLocaleString('en-IN')}</strong></span>
+              <span className={`font-medium ${
+                selectedCrop.trend === 'up' ? 'text-green-600' : selectedCrop.trend === 'down' ? 'text-red-500' : 'text-amber-600'
+              }`}>
+                {selectedCrop.change > 0 ? '+' : ''}{selectedCrop.change}% this period
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Crop Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
           {prices.map((crop) => (
             <div
               key={crop.name}
-              className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-amber-50/80 to-orange-50/50 border border-amber-100 hover:border-amber-300 transition-colors"
+              onClick={() => setSelectedCrop(selectedCrop?.name === crop.name ? null : crop)}
+              className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
+                selectedCrop?.name === crop.name
+                  ? 'bg-amber-100/80 border-amber-400 shadow-sm'
+                  : 'bg-gradient-to-r from-amber-50/80 to-orange-50/50 border-amber-100 hover:border-amber-300'
+              }`}
             >
               <div className="min-w-0">
                 <p className="font-semibold text-sm sm:text-base text-foreground truncate">{crop.name}</p>
