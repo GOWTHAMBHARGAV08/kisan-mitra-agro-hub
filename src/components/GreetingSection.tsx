@@ -67,36 +67,6 @@ export const GreetingSection = ({ onSectionChange, userName, userState, userDist
     return () => clearInterval(weatherInterval);
   }, []);
 
-  const quickAccessTiles = [
-    { 
-      icon: Leaf, 
-      title: 'Crop Care', 
-      description: 'Plant health analysis',
-      section: 'plant-analyzer', 
-      gradient: 'from-emerald-500 to-green-600' 
-    },
-    { 
-      icon: CloudRain, 
-      title: 'Weather', 
-      description: 'Real-time forecast',
-      section: 'weather', 
-      gradient: 'from-blue-500 to-sky-600' 
-    },
-    { 
-      icon: ShoppingCart, 
-      title: 'Store', 
-      description: 'Seeds & fertilizer',
-      section: 'pest-fertilizer', 
-      gradient: 'from-amber-500 to-orange-600' 
-    },
-    { 
-      icon: MessageCircle, 
-      title: 'AI Assistant', 
-      description: 'Get farming advice',
-      section: 'chatbot', 
-      gradient: 'from-purple-500 to-indigo-600' 
-    }
-  ];
 
   const supportLinks = [
     { icon: Phone, label: 'Helpline', subtitle: '1800-XXX-XXXX' },
