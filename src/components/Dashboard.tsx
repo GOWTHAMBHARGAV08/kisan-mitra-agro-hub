@@ -59,7 +59,7 @@ export const Dashboard = ({ onLogout }: DashboardProps) => {
       case 'profile':
         return <ProfileSettings />;
       default:
-        return <GreetingSection onSectionChange={setActiveSection} userName={userName} />;
+        return <GreetingSection onSectionChange={setActiveSection} userName={userName} userState={userState} userDistrict={userDistrict} />;
     }
   };
 
